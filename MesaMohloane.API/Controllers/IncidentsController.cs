@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 
 namespace MesaMohloane.API.Controllers
 {
@@ -17,15 +18,18 @@ namespace MesaMohloane.API.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IAuditService _auditService;
         private readonly IWebHostEnvironment _environment;
+        private readonly ILogger<IncidentsController> _logger;
 
         public IncidentsController(
             ApplicationDbContext context,
             IAuditService auditService,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            ILogger<IncidentsController> logger)
         {
             _context = context;
             _auditService = auditService;
             _environment = environment;
+            _logger = logger;
         }
 
         /// <summary>
@@ -266,16 +270,37 @@ namespace MesaMohloane.API.Controllers
         // HELPERS
         // ========================
 
-        private async Task<string> SavePhoto(IFormFile photo)
+        private async Task<string?> SavePhoto(IFormFile photo)
         {
-            var uploadsFolder = Path.Combine(_environment.WebRootPath ?? "wwwroot", "uploads", "incidents");
+            if (photo == null || photo.Length == 0)
+                return null;
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            var extension = Path.GetExtension(photo.FileName).ToLowerInvariant();
+
+            if (!allowedExtensions.Contains(extension))
+            {
+                _logger.LogWarning("Photo upload rejected: invalid extension {Extension}", extension);
+                return null;
+            }
+
+            if (photo.Length > 5 * 1024 * 1024)
+            {
+                _logger.LogWarning("Photo upload rejected: file too large {Size} bytes", photo.Length);
+                return null;
+            }
+
+            var webRoot = _environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var uploadsFolder = Path.Combine(webRoot, "uploads", "incidents");
             Directory.CreateDirectory(uploadsFolder);
 
-            var uniqueFileName = $"{Guid.NewGuid()}_{photo.FileName}";
+            var uniqueFileName = $"{Guid.NewGuid()}{extension}";
             var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
             using var stream = new FileStream(filePath, FileMode.Create);
             await photo.CopyToAsync(stream);
+
+            _logger.LogInformation("Photo uploaded: {FileName}, {Size} bytes", uniqueFileName, photo.Length);
 
             return $"/uploads/incidents/{uniqueFileName}";
         }
