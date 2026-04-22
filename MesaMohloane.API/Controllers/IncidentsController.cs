@@ -19,20 +19,17 @@ namespace MesaMohloane.API.Controllers
         private readonly IAuditService _auditService;
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger<IncidentsController> _logger;
-        private readonly IConfiguration _configuration;
 
         public IncidentsController(
             ApplicationDbContext context,
             IAuditService auditService,
             IWebHostEnvironment environment,
-            ILogger<IncidentsController> logger,
-            IConfiguration configuration)
+            ILogger<IncidentsController> logger)
         {
             _context = context;
             _auditService = auditService;
             _environment = environment;
             _logger = logger;
-            _configuration = configuration;
         }
 
         /// <summary>
@@ -305,7 +302,7 @@ namespace MesaMohloane.API.Controllers
 
             _logger.LogInformation("Photo uploaded: {FileName}, {Size} bytes", uniqueFileName, photo.Length);
 
-            var baseUrl = _configuration["ClientUrl"] ?? Request.Scheme + "://" + Request.Host.ToString();
+            var baseUrl = Request.Scheme + "://" + Request.Host.ToString();
             return $"{baseUrl}/uploads/incidents/{uniqueFileName}";
         }
 
