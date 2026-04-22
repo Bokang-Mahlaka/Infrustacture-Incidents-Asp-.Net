@@ -1,0 +1,134 @@
+@model List<Mesa_Mohloane_internal.Models.IncidentViewModel>
+@{
+    ViewData["Title"] = "Infrastructure Command Center";
+}
+
+<div class="db-container">
+    <!-- System Oversight Banner -->
+    <div class="db-card mb-5 border-0 shadow-sm overflow-hidden" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: white;">
+        <div class="db-card-body d-flex justify-content-between align-items-center py-4 px-5">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2 opacity-75">
+                    <i data-lucide="shield" style="width: 16px; height: 16px;"></i>
+                    <span class="small fw-bold text-uppercase">Institutional Oversight Active</span>
+                </div>
+                <h3 class="fw-extrabold mb-1">National Command Center</h3>
+                <p class="text-white-50 m-0">Managing @(Model?.Count ?? 0) active infrastructure signals across Lesotho's 10 districts.</p>
+            </div>
+            <div class="d-flex gap-4">
+                <div class="text-center">
+                    <div class="h4 fw-bold mb-0">99.9%</div>
+                    <div class="small opacity-50">System Uptime</div>
+                </div>
+                <div class="text-center border-start ps-4 border-secondary">
+                    <div class="h4 fw-bold mb-0">@(Model?.Sum(i => i.ProposalCount) ?? 0)</div>
+                    <div class="small opacity-50">Active Bids</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Management Filtering Header -->
+    <div class="db-greeting d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h5 class="fw-bold m-0" style="letter-spacing: -0.02em;">Infrastructure Queue</h5>
+        </div>
+        <div class="d-flex gap-2">
+             @{
+                string current = ViewBag.CurrentStatus ?? "All";
+                var filterStatuses = new[] { "All", "Assigned", "Completed", "Other" };
+            }
+            @foreach (var s in filterStatuses)
+            {
+                <a asp-action="Dashboard" asp-route-status="@s" 
+                   class="btn btn-sm px-4 py-2 rounded-3 text-decoration-none fw-bold @(current == s ? "bg-white shadow-sm text-brand border" : "bg-light text-muted border-0")" style="font-size: 0.8rem;">
+                   @s
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Main Content: Full Width Table -->
+    <div class="db-card border-0 shadow-sm">
+        <div class="db-card-body p-0">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4 border-0 small text-uppercase fw-bold text-muted" style="width: 100px;">Project ID</th>
+                                <th class="border-0 small text-uppercase fw-bold text-muted">Title & Report Date</th>
+                                <th class="border-0 small text-uppercase fw-bold text-muted">Location</th>
+                                <th class="border-0 small text-uppercase fw-bold text-muted">Bidding Activity</th>
+                                <th class="border-0 small text-uppercase fw-bold text-muted">Current Status</th>
+                                <th class="pe-4 border-0 text-end small text-uppercase fw-bold text-muted">Operations</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold text-muted">#@(item.Id.ToString("D4"))</td>
+                                    <td>
+                                        <div class="fw-bold" style="color: var(--text-heading);">@item.Title</div>
+                                        <div class="small text-muted">@item.CreatedAt.ToLongDateString()</div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i data-lucide="map-pin" class="text-muted" style="width: 14px; height: 14px;"></i>
+                                            <span class="small fw-medium">@item.Location</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <span class="db-badge db-badge-info">@item.ProposalCount Bids</span>
+                                            @if(item.ProposalCount > 5) {
+                                                <i data-lucide="flame" class="text-danger" style="width: 14px; height: 14px;" title="High interest"></i>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if(item.Status == "Published") {
+                                            <span class="db-badge db-badge-warning">Tendering</span>
+                                        } else if (item.Status == "Assigned") {
+                                            <span class="db-badge db-badge-success">Active Job</span>
+                                        } else if (item.Status == "Completed") {
+                                            <span class="db-badge db-badge-success border">Completed</span>
+                                        } else {
+                                            <span class="db-badge bg-light text-muted border">@item.Status</span>
+                                        }
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        <div class="dropdown">
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-brand px-4 fw-bold">Manage</a>
+                                            <button class="btn btn-sm btn-light border-0 ms-1" type="button" data-bs-toggle="dropdown">
+                                                <i data-lucide="more-vertical" style="width: 14px; height: 14px;"></i>
+                                            </button>
+                                            <ul class="dropdown-menu border-0 shadow-lg small fw-bold">
+                                                <li><a class="dropdown-item" href="#">View Audit logs</a></li>
+                                                <li><a class="dropdown-item" href="#">Manually Re-rank</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item text-danger" href="#">Declare Emergency</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="db-empty py-5">
+                    <i data-lucide="filter-x" class="opacity-25 mb-3" style="width: 48px; height: 48px;"></i>
+                    <h5 class="fw-bold">No projects matched your filter</h5>
+                    <p class="text-muted small">Try selecting "All" or adjusting your search parameters.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+

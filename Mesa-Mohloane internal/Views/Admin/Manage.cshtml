@@ -1,0 +1,93 @@
+@model List<Mesa_Mohloane_internal.Models.ContractorRankingViewModel>
+@{
+    ViewData["Title"] = "Evaluate Tenders";
+}
+
+<div class="container section-padding">
+    <div class="d-flex justify-content-between align-items-center mb-5 border-bottom pb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Algorithmic Tender Evaluation</h2>
+            <p class="text-muted">Viewing contractor rankings for Incident #@ViewBag.IncidentId</p>
+        </div>
+        <div>
+            <a asp-action="Dashboard" class="btn btn-outline-secondary">Go Back</a>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="clearbit-card shadow-sm p-0 overflow-hidden">
+            <table class="table table-hover mb-0">
+                <thead style="background: var(--bg-offwhite);">
+                    <tr>
+                        <th class="ps-4 py-3">Rank</th>
+                        <th class="py-3">Contractor</th>
+                        <th class="py-3">Cost (LSL)</th>
+                        <th class="py-3">Timeline</th>
+                        <th class="py-3">Citizen Rating</th>
+                        <th class="py-3">Final Algorithm Score</th>
+                        <th class="py-3 pe-4 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="align-middle">
+                    @foreach(var rank in Model)
+                    {
+                        <tr style="@(rank.Rank == 1 ? "background-color: rgba(42, 68, 242, 0.05);" : "")">
+                            <td class="ps-4 fw-bold @(rank.Rank == 1 ? "text-primary" : "")">
+                                #@rank.Rank
+                            </td>
+                            <td>
+                                <strong>@rank.ContractorName</strong><br/>
+                                <small class="text-muted">@(rank.CompanyName ?? "Independent")</small>
+                            </td>
+                            <td class="fw-bold">M@(@rank.TotalCost.ToString("N2"))</td>
+                            <td>@rank.EstimatedDays Days</td>
+                            <td>
+                                <i data-lucide="star" class="text-warning me-1" style="width: 14px; height: 14px;"></i>
+                                @Math.Round(rank.AverageRating, 1) (@rank.CompletedJobs Jobs)
+                            </td>
+                            <td>
+                                <span class="badge" style="background: var(--brand-primary); color: white;">
+                                    @Math.Round(rank.FinalScore, 2)% Match
+                                </span>
+                            </td>
+                            <td class="pe-4 text-end">
+                                <form asp-action="AssignContractor" method="post">
+                                    <input type="hidden" name="incidentId" value="@ViewBag.IncidentId" />
+                                    <input type="hidden" name="proposalId" value="@rank.ProposalId" />
+                                    @if(rank.Rank == 1)
+                                    {
+                                        <button type="submit" class="btn-brand btn-sm">
+                                            Assign Contract
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-sm btn-light text-muted" disabled style="cursor: not-allowed; border: 1px dashed var(--border-light);">
+                                            Not Eligible
+                                        </button>
+                                    }
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5 clearbit-card clearbit-card-glass shadow-sm mx-auto p-5" style="max-width: 600px;">
+            <div class="bg-primary-soft text-primary rounded-circle p-4 d-inline-block mb-4">
+                <i data-lucide="info" style="width: 48px; height: 48px;"></i>
+            </div>
+            <h4 class="fw-bold mb-3">Soliticing Technical Bids</h4>
+            <p class="text-muted mb-4">
+                No contractors have submitted technical proposals for this incident yet. To accelerate the repair process, ensure this incident has been **Published to Tender** so it appears in the contractor marketplace.
+            </p>
+            <div class="d-flex justify-content-center" style="gap: 15px;">
+                <a asp-action="Dashboard" class="btn btn-brand px-4">Back to Command Center</a>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,132 @@
+@model List<Mesa_Mohloane_internal.Models.ProposalViewModel>
+@{
+    ViewData["Title"] = "My Active Jobs";
+}
+
+<div class="container section-padding">
+    <div class="d-flex justify-content-between align-items-center mb-5 border-bottom pb-4">
+        <div>
+            <h2 class="fw-bold mb-1">@(ViewBag.ShowHistory ? "Project Archive" : "Active Contracts")</h2>
+            <p class="text-muted">@(ViewBag.ShowHistory ? "Review your historical performance and institutional repair logs." : "Manage your assigned infrastructural repair contracts.")</p>
+        </div>
+        <div class="d-flex gap-2">
+            @if (ViewBag.ShowHistory)
+            {
+                <a asp-action="MyJobs" asp-route-showHistory="false" class="btn btn-outline-brand">
+                    <i data-lucide="activity" class="me-2" style="width: 18px; height: 18px;"></i> Active Assignments
+                </a>
+            }
+            else
+            {
+                <a asp-action="MyJobs" asp-route-showHistory="true" class="btn btn-outline-secondary">
+                    <i data-lucide="history" class="me-2" style="width: 18px; height: 18px;"></i> Technical History
+                </a>
+            }
+            <a asp-action="Dashboard" class="btn btn-outline-secondary">
+                <i data-lucide="search" class="me-2" style="width: 18px; height: 18px;"></i> Find Tenders
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i data-lucide="check-circle" class="me-2" style="width: 18px; height: 18px;"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            @foreach(var item in Model)
+            {
+                <div class="col-lg-6 mb-4">
+                    <div class="clearbit-card clearbit-card-hoverable h-100 d-flex flex-column" style="@(ViewBag.ShowHistory ? "border-left: 4px solid var(--border-light);" : "border-left: 4px solid var(--brand-primary);")">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge @(ViewBag.ShowHistory ? "bg-light text-muted" : "bg-success-soft text-success border border-success-subtle") px-3 py-2">
+                                <i data-lucide="@(ViewBag.ShowHistory ? "archive" : "check")" class="me-1" style="width: 14px; height: 14px;"></i> 
+                                @(ViewBag.ShowHistory ? "Archived Record" : "Active Contract")
+                            </span>
+                            <span class="text-muted small">
+                                ID: #@item.Id
+                            </span>
+                        </div>
+                        
+                        <h5 class="fw-bold text-dark mb-2">@item.IncidentTitle</h5>
+                        <p class="text-body small mb-2">
+                            @(ViewBag.ShowHistory ? "You completed this job for" : "You won this tender with a bid of") <strong>M@(@item.TotalCost.ToString("N2"))</strong>.
+                        </p>
+
+                        <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                            @if (ViewBag.ShowHistory)
+                            {
+                                 <span class="text-muted fw-bold small"><i data-lucide="shield-check" class="me-1" style="width: 12px; height: 12px;"></i> Institutional Audit Passed</span>
+                                 <span class="badge bg-primary px-3 py-2">Disbursed</span>
+                            }
+                            else
+                            {
+                                <span class="text-brand fw-bold small">Institutional Repair Log</span>
+                                
+                                @if (!string.IsNullOrEmpty(item.PaymentStatus) && (item.PaymentStatus.Equals("Disbursed", StringComparison.OrdinalIgnoreCase) || item.PaymentStatus.Equals("Paid", StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    <span class="badge bg-success text-white px-3 py-2">
+                                        <i data-lucide="check-check" class="me-1" style="width: 14px; height: 14px;"></i> Paid & Disbursed
+                                    </span>
+                                }
+                                else if (!string.IsNullOrEmpty(item.PaymentStatus))
+                                {
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-warning-soft text-dark border border-warning-subtle px-3 py-2">
+                                            <i data-lucide="clock" class="me-1" style="width: 14px; height: 14px;"></i> Processing
+                                        </span>
+                                        @if (!item.CitizenAcknowledged)
+                                        {
+                                            <span class="text-muted small fw-bold" title="Awaiting Citizen Recognition">
+                                                <i data-lucide="clock" class="ms-1" style="width: 12px; height: 12px;"></i>
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-success small fw-bold" title="Work Verified by Citizen">
+                                                <i data-lucide="check" class="ms-1" style="width: 12px; height: 12px;"></i>
+                                            </span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <a asp-action="SubmitInvoice" asp-route-proposalId="@item.Id" class="btn btn-sm btn-brand px-4 text-decoration-none">
+                                        Finish & Bill <i data-lucide="file-check" class="ms-1" style="width: 14px; height: 14px;"></i>
+                                    </a>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5 clearbit-card clearbit-card-glass shadow-sm mx-auto p-5" style="max-width: 600px;">
+            @if (ViewBag.ShowHistory)
+            {
+                <div class="bg-light text-muted rounded-circle p-4 d-inline-block mb-4">
+                    <i data-lucide="archive" style="width: 48px; height: 48px; opacity: 0.5;"></i>
+                </div>
+                <h4 class="fw-bold">Empty Archive</h4>
+                <p class="text-muted">You haven't completed any multi-stage projects yet. Finish your active jobs first to build your technical history.</p>
+            }
+            else
+            {
+                <div class="bg-primary-soft text-primary rounded-circle p-4 d-inline-block mb-4">
+                    <i data-lucide="briefcase" style="width: 48px; height: 48px;"></i>
+                </div>
+                <h4 class="fw-bold">No Active Assignments</h4>
+                <p class="text-muted">You are not currently assigned to any active repairs. Check the tender marketplace for new opportunities.</p>
+                <a asp-action="Dashboard" class="btn btn-brand px-4 py-2 mt-2">Browse Marketplace</a>
+            }
+        </div>
+    }
+</div>

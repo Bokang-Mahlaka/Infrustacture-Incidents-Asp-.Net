@@ -1,0 +1,56 @@
+@model Mesa_Mohloane_internal.Models.CreateRatingViewModel
+@{
+    ViewData["Title"] = "Rate Contractor Performance";
+}
+
+<div class="container section-padding pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <h2 class="fw-bold mb-4 text-center">Rate This Repair</h2>
+            <p class="text-center text-muted mb-4">Your rating algorithmically influences whether this contractor wins future government tenders.</p>
+            
+            <div class="clearbit-card shadow-sm">
+                <form asp-action="Rate" method="post">
+                    <input type="hidden" asp-for="IncidentId" />
+                    
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3 small fw-bold"></div>
+
+                    <div class="mb-4 text-center">
+                        <label class="text-heading fw-bold small mb-3">Overall Satisfaction (1 to 5 Stars)</label>
+                        <div class="d-flex justify-content-center" style="gap: 15px;">
+                            @for(int i = 1; i <= 5; i++)
+                            {
+                                <div>
+                                    <input type="radio" class="btn-check" name="Rating" id="rating@(i)" value="@i" autocomplete="off" @(i == 5 ? "checked" : "")>
+                                    <label class="btn btn-outline-warning d-flex flex-column align-items-center p-3" style="border-radius: var(--radius-card);" for="rating@(i)">
+                                        <i data-lucide="star" style="width: 28px; height: 28px;"></i>
+                                        <span class="fw-bold mt-1 text-dark">@i</span>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                        <span asp-validation-for="Rating" class="text-danger small mt-2 d-block"></span>
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <textarea asp-for="Comment" class="form-control" placeholder="Optional details..." style="height: 100px;"></textarea>
+                        <label asp-for="Comment" class="text-muted small">Additional Comments (Optional)</label>
+                        <span asp-validation-for="Comment" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn-brand w-100 py-3 mt-2 fw-bold" style="font-size: 1.1rem;">
+                        Submit Rating <i data-lucide="check" class="ms-2" style="width: 18px; height: 18px;"></i>
+                    </button>
+                    
+                    <div class="text-center mt-3">
+                        <a asp-action="Dashboard" class="text-muted small text-decoration-none">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

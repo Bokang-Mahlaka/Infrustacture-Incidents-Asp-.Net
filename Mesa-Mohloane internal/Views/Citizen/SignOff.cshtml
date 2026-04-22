@@ -1,0 +1,118 @@
+@model Mesa_Mohloane_internal.Models.ProjectSignOffViewModel
+@{
+    ViewData["Title"] = "Project Sign-off — " + Model.IncidentTitle;
+}
+
+<div class="container section-padding">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="text-center mb-5">
+                <div class="bg-success-soft text-success rounded-circle p-3 d-inline-block mb-3">
+                    <i data-lucide="check-square" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h2 class="fw-extrabold text-heading">Certification & Sign-off</h2>
+                <p class="text-muted">You are formally certifying the completion of <strong>@Model.IncidentTitle</strong>.</p>
+            </div>
+
+            <div class="clearbit-card shadow-lg mb-4">
+                <form asp-action="AcknowledgeWork" method="post">
+                    <input type="hidden" asp-for="IncidentId" />
+                    <input type="hidden" asp-for="IncidentTitle" />
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger mb-4">
+                            <ul class="mb-0 small">
+                                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                {
+                                    <li>@error.ErrorMessage</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    <!-- 1. Rating Section -->
+                    <div class="mb-5 text-center">
+                        <label class="fw-bold text-heading d-block mb-3">Rate the Workmanship</label>
+                        <div class="d-flex justify-content-center gap-3 star-rating-container mb-2">
+                             @for (int i = 1; i <= 5; i++)
+                             {
+                                 <div class="star-item" onclick="setRating(@i)" id="star-@i" style="cursor: pointer; transition: transform 0.2s;">
+                                     <i data-lucide="star" class="text-muted" style="width: 36px; height: 36px;" id="star-icon-@i"></i>
+                                 </div>
+                             }
+                        </div>
+                        <input type="hidden" asp-for="Rating" id="RatingInput" />
+                        <span id="rating-label" class="text-brand fw-bold small">Very Good</span>
+                    </div>
+
+                    <!-- 2. Comment Section -->
+                    <div class="mb-4">
+                        <label asp-for="Comment" class="form-label fw-bold small text-muted text-uppercase ls-1">Detailed Feedback</label>
+                        <textarea asp-for="Comment" class="form-control" rows="4" placeholder="How was the contractor's performance? Did they leave the site clean?"></textarea>
+                        <span asp-validation-for="Comment" class="text-danger small"></span>
+                    </div>
+
+                    <!-- 3. Certification Section -->
+                    <div class="bg-light p-4 rounded-3 mb-5 border">
+                        <div class="form-check d-flex align-items-start gap-3">
+                            <input class="form-check-input mt-1" type="checkbox" asp-for="Certified" style="width: 20px; height: 20px;">
+                            <label class="form-check-label small text-secondary" style="line-height: 1.6;">
+                                <strong class="text-heading d-block mb-1">Electronic Signature</strong>
+                                I hereby certify that the reported infrastructure issue has been resolved to a satisfactory standard. I understand that this sign-off will initiate the final payment disbursement to the contractor.
+                            </label>
+                        </div>
+                        <span asp-validation-for="Certified" class="text-danger small d-block mt-1"></span>
+                    </div>
+
+                    <div class="vstack gap-3">
+                        <button type="submit" class="btn btn-brand w-100 py-3 fw-bold">
+                            <i data-lucide="send" class="me-2" style="width: 18px; height: 18px;"></i> Complete Sign-off
+                        </button>
+                        <a asp-action="Dashboard" class="btn btn-light w-100 py-3 fw-bold text-muted">
+                            Cancel & Return
+                        </a>
+                    </div>
+                </form>
+            </div>
+            
+            <p class="text-center text-muted small">
+                <i data-lucide="shield-check" class="me-1" style="width: 12px; height: 12px;"></i> 
+                Mesa-Mohloane Audit System — Session Secure
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function setRating(rating) {
+            document.getElementById('RatingInput').value = rating;
+            
+            const labels = ["Poor", "Fair", "Good", "Very Good", "Excellent"];
+            document.getElementById('rating-label').innerText = labels[rating-1];
+
+            for (let i = 1; i <= 5; i++) {
+                const icon = document.getElementById('star-icon-' + i);
+                const item = document.getElementById('star-' + i);
+                
+                if (i <= rating) {
+                    icon.classList.remove('text-muted');
+                    icon.classList.add('text-warning');
+                    icon.setAttribute('fill', 'var(--brand-primary)');
+                    item.style.transform = "scale(1.2)";
+                } else {
+                    icon.classList.add('text-muted');
+                    icon.classList.remove('text-warning');
+                    icon.removeAttribute('fill');
+                    item.style.transform = "scale(1.0)";
+                }
+            }
+        }
+
+        // Initialize with default
+        window.addEventListener('load', () => {
+            setRating(5);
+        });
+    </script>
+}

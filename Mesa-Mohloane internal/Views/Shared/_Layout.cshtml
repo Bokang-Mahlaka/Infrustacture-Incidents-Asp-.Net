@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Mesa Mohloane</title>
+    
+    <!-- Load Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Mesa_Mohloane_internal.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <!-- Global Bouncing Preloader -->
+    <div id="global-preloader">
+        <div class="bounce-loader">
+            <div class="bounce-dot"></div>
+            <div class="bounce-dot"></div>
+            <div class="bounce-dot"></div>
+        </div>
+    </div>
+
+    @if (ViewData["HideNavAndFooter"] == null || (bool)ViewData["HideNavAndFooter"] == false)
+    {
+        <div class="ambient-gradient-bg"></div>
+
+        <header>
+        <nav class="navbar navbar-expand-lg fixed-top" id="mainNavbar">
+            <div class="container">
+                <!-- Brand -->
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="28" height="28" rx="8" fill="url(#logoGrad)" />
+                        <path d="M14 7L8 13L14 19L20 13L14 7Z" fill="white" opacity="0.9"/>
+                        <path d="M14 10L11 13L14 16L17 13L14 10Z" fill="white" opacity="0.5"/>
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0" y1="0" x2="28" y2="28">
+                                <stop stop-color="#4F46E5"/>
+                                <stop offset="1" stop-color="#7C3AED"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span>Mesa</span>Mohloane
+                </a>
+
+                <!-- Toggler -->
+                <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Nav Content -->
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between mt-3 mt-lg-0" id="mainNav">
+                    <ul class="navbar-nav mx-auto flex-grow-0">
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            @if (User.IsInRole("Citizen")) {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Citizen" asp-action="Dashboard">Feed</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Citizen" asp-action="Report">Report Issue</a></li>
+                            }
+                            else if (User.IsInRole("Contractor")) {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Contractor" asp-action="Dashboard">Tenders</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Contractor" asp-action="MyJobs">My Jobs</a></li>
+                            }
+                            else if (User.IsInRole("Admin")) {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Dashboard">Command Center</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Invoices">Billing</a></li>
+                            }
+                            else if (User.IsInRole("Auditor")) {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Auditor" asp-action="Dashboard">Analysis</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Auditor" asp-action="AuditLogs">Audit Logs</a></li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Platform</a>
+                                <ul class="dropdown-menu border-0 shadow-lg mt-2">
+                                    <li><a class="dropdown-item" href="#infrastructure"><i data-lucide="layers" class="me-2" style="width:16px; height:16px;"></i>Infrastructure Registry</a></li>
+                                    <li><a class="dropdown-item" href="#verification"><i data-lucide="shield-check" class="me-2" style="width:16px; height:16px;"></i>Verification Engine</a></li>
+                                    <li><a class="dropdown-item" href="#reporting"><i data-lucide="file-text" class="me-2" style="width:16px; height:16px;"></i>Citizen Reporting</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Solutions</a>
+                                <ul class="dropdown-menu border-0 shadow-lg mt-2">
+                                    <li><a class="dropdown-item" href="#government"><i data-lucide="landmark" class="me-2" style="width:16px; height:16px;"></i>For Government</a></li>
+                                    <li><a class="dropdown-item" href="#contractors"><i data-lucide="hard-hat" class="me-2" style="width:16px; height:16px;"></i>For Contractors</a></li>
+                                    <li><a class="dropdown-item" href="#citizens"><i data-lucide="users" class="me-2" style="width:16px; height:16px;"></i>For Citizens</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item"><a class="nav-link" href="#pricing">Pricing</a></li>
+                        }
+                    </ul>
+
+                    <!-- Auth Actions -->
+                    <div class="d-flex flex-column flex-lg-row align-items-center gap-2 mt-3 mt-lg-0">
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="fw-semibold text-muted d-none d-lg-inline" style="font-size: 0.85rem;">@User.Identity.Name</span>
+                                <a class="btn-brand-outline text-decoration-none" asp-controller="Auth" asp-action="Logout">Log out</a>
+                            </div>
+                        }
+                        else
+                        {
+                            <a class="text-decoration-none nav-link" asp-controller="Auth" asp-action="Login">Log in</a>
+                            <a class="btn-brand text-decoration-none" asp-controller="Auth" asp-action="Register">Get started free</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+        </header>
+    }
+    
+    <div style="@(ViewData["HideNavAndFooter"] != null && (bool)ViewData["HideNavAndFooter"] == true ? "" : "margin-top: 72px;")">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    @if (ViewData["HideNavAndFooter"] == null || (bool)ViewData["HideNavAndFooter"] == false)
+    {
+        <footer class="site-footer mt-5 py-5">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="28" height="28" rx="8" fill="url(#footerLogoGrad)" />
+                            <path d="M14 7L8 13L14 19L20 13L14 7Z" fill="white" opacity="0.9"/>
+                            <defs>
+                                <linearGradient id="footerLogoGrad" x1="0" y1="0" x2="28" y2="28">
+                                    <stop stop-color="#4F46E5"/>
+                                    <stop offset="1" stop-color="#7C3AED"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span class="fw-bold" style="color: var(--text-heading);">Mesa Mohloane</span>
+                    </div>
+                    <p class="text-muted small mb-0">Infrastructure intelligence for the Kingdom of Lesotho.</p>
+                </div>
+                <div class="col-md-2 mb-3 mb-md-0">
+                    <h6 class="small fw-bold text-uppercase mb-3" style="letter-spacing: 0.05em; color: var(--text-muted);">Platform</h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><a class="text-muted small text-decoration-none" href="#">Registry</a></li>
+                        <li class="mb-2"><a class="text-muted small text-decoration-none" href="#">Verification</a></li>
+                        <li><a class="text-muted small text-decoration-none" href="#">Reporting</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-3 mb-md-0">
+                    <h6 class="small fw-bold text-uppercase mb-3" style="letter-spacing: 0.05em; color: var(--text-muted);">Company</h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><a class="text-muted small text-decoration-none" href="#">About</a></li>
+                        <li class="mb-2"><a class="text-muted small text-decoration-none" href="#">Careers</a></li>
+                        <li><a class="text-muted small text-decoration-none" href="#">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <p class="text-muted small mb-0">&copy; 2026 Mesa-Mohloane Infrastructure.</p>
+                    <p class="text-muted small mb-0">Built for the Kingdom of Lesotho.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    }
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      lucide.createIcons();
+    </script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

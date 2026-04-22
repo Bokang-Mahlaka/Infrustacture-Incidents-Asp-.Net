@@ -1,0 +1,79 @@
+@model Mesa_Mohloane_internal.Models.CreateIncidentViewModel
+@{
+    ViewData["Title"] = "Report Infrastructure Issue";
+}
+
+<div class="container section-padding pb-5">
+    <div class="row">
+        <!-- Z-Pattern Graphic Left -->
+        <div class="col-lg-5 order-2 order-lg-1 mt-5 mt-lg-0">
+            <div class="clearbit-card clearbit-card-glass shadow-sm h-100 d-flex flex-column justify-content-center">
+                <div class="text-center mb-4">
+                    <i data-lucide="map" class="text-primary mb-3" style="width: 48px; height: 48px;"></i>
+                    <h5 class="fw-bold">How it works</h5>
+                </div>
+                <div class="d-flex mb-3 align-items-start">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width: 24px; height: 24px; font-size: 0.8rem; flex-shrink: 0;">1</div>
+                    <p class="small text-muted mb-0">Describe the physical infrastructure damage.</p>
+                </div>
+                <div class="d-flex mb-3 align-items-start">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width: 24px; height: 24px; font-size: 0.8rem; flex-shrink: 0;">2</div>
+                    <p class="small text-muted mb-0">Contractors automatically submit repair bids.</p>
+                </div>
+                <div class="d-flex align-items-start">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width: 24px; height: 24px; font-size: 0.8rem; flex-shrink: 0;">3</div>
+                    <p class="small text-muted mb-0">Our AI algorithm assigns the fastest, safest quote.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 offset-lg-1 order-1 order-lg-2">
+            <h2 class="fw-bold mb-4">Report an issue.</h2>
+            <div class="clearbit-card shadow-sm">
+                <form asp-action="Report" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3 small fw-bold"></div>
+
+                    <div class="form-floating mb-4">
+                        <input asp-for="Title" class="form-control" placeholder="Fallen Pole" />
+                        <label asp-for="Title" class="text-muted small">Summary of Damage</label>
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label asp-for="Category" class="text-heading fw-bold small mb-2">Issue Category</label>
+                        <select asp-for="Category" class="form-select form-control text-muted" style="height: auto;">
+                            <option value="Road">Road / Pothole</option>
+                            <option value="Water">Water / Burst Pipe</option>
+                            <option value="Electricity">Electricity / Pole</option>
+                            <option value="Other">Other Civic Property</option>
+                        </select>
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <input asp-for="Location" class="form-control" placeholder="Maseru West" />
+                        <label asp-for="Location" class="text-muted small">Exact Location (Village/Street)</label>
+                        <span asp-validation-for="Location" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <textarea asp-for="Description" class="form-control" placeholder="Details" style="height: 120px;"></textarea>
+                        <label asp-for="Description" class="text-muted small">Detailed Description of the Problem</label>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn-brand w-100 py-3 mt-2 fw-bold" style="font-size: 1.1rem;">
+                        Submit Report <i data-lucide="arrow-right" class="ms-2" style="width: 18px; height: 18px;"></i>
+                    </button>
+                    
+                    <div class="text-center mt-3">
+                        <a asp-action="Dashboard" class="text-muted small text-decoration-none">Back to Dashboard</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

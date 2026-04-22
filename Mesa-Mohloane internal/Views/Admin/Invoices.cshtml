@@ -1,0 +1,171 @@
+@model List<Mesa_Mohloane_internal.Models.InvoiceViewModel>
+@{
+    ViewData["Title"] = "Contractor Billing Management";
+}
+
+<div class="container section-padding">
+    <div class="d-flex justify-content-between align-items-center mb-5 border-bottom pb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Billing & Invoices</h2>
+            <p class="text-muted">Review, verify, and approve contractor payment requests.</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i data-lucide="check-circle" class="me-2" style="width: 18px; height: 18px;"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i data-lucide="alert-triangle" class="me-2" style="width: 18px; height: 18px;"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="clearbit-card shadow-sm p-0 overflow-hidden">
+            <table class="table table-hover mb-0">
+                <thead style="background: var(--bg-offwhite);">
+                    <tr>
+                        <th class="ps-4 py-3">Invoice</th>
+                        <th class="py-3">Contractor</th>
+                        <th class="py-3">Amount</th>
+                        <th class="py-3">Status</th>
+                        <th class="py-3">Deviation</th>
+                        <th class="py-3 pe-4 text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="align-middle">
+                    @foreach(var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <strong>#@item.Id</strong><br/>
+                                <small class="text-muted">@item.SubmittedAt.ToString("MMM dd, yyyy")</small>
+                            </td>
+                            <td>@item.ContractorName</td>
+                            <td class="fw-bold">M@(@item.TotalAmount.ToString("N2"))</td>
+                            <td>
+                                @if (string.Equals(item.Status, "Approved", StringComparison.OrdinalIgnoreCase)) {
+                                    <span class="badge bg-success-soft text-success border border-success-subtle">Approved</span>
+                                    @if(item.CitizenAcknowledged) {
+                                        <div class="small mt-1 text-success fw-bold"><i data-lucide="check-check" style="width: 10px; height: 10px;"></i> Acknowledged</div>
+                                    } else {
+                                        <div class="small mt-1 text-muted"><i data-lucide="clock" style="width: 10px; height: 10px;"></i> Awaiting Citizen</div>
+                                    }
+                                } else if (string.Equals(item.Status, "Rejected", StringComparison.OrdinalIgnoreCase)) {
+                                    <span class="badge bg-danger-soft text-danger border border-danger-subtle">Rejected</span>
+                                } else if (string.Equals(item.Status, "Flagged", StringComparison.OrdinalIgnoreCase)) {
+                                    <span class="badge bg-warning-soft text-dark border border-warning-subtle">Risk Flagged</span>
+                                } else if (string.Equals(item.Status, "Submitted", StringComparison.OrdinalIgnoreCase) || 
+                                           string.Equals(item.Status, "Pending", StringComparison.OrdinalIgnoreCase)) {
+                                    <span class="badge bg-secondary-soft text-muted border border-secondary-subtle">Pending Review</span>
+                                } else {
+                                    <span class="badge bg-secondary-soft text-muted border border-secondary-subtle">@item.Status</span>
+                                }
+                            </td>
+                            <td>
+                                @if(item.DeviationFlagged) {
+                                    <span class="text-danger fw-bold">
+                                        <i data-lucide="trending-up" class="me-1" style="width: 14px; height: 14px;"></i>
+                                        +@item.DeviationPercentage.ToString("F1")%
+                                    </span>
+                                } else {
+                                    <span class="text-success small">Normal</span>
+                                }
+                            </td>
+                            <td class="pe-4 text-end">
+                                <div class="d-flex justify-content-end align-items-center" style="gap: 12px;">
+                                    @if(string.Equals(item.Status, "Submitted", StringComparison.OrdinalIgnoreCase) || 
+                                        string.Equals(item.Status, "Pending", StringComparison.OrdinalIgnoreCase) || 
+                                        string.Equals(item.Status, "Flagged", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <form asp-action="ApproveInvoice" method="post" class="m-0">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit" class="btn btn-sm btn-success px-3 fw-bold">Approve</button>
+                                        </form>
+                                        <button type="button" class="btn btn-sm btn-outline-danger px-3 fw-bold" 
+                                                data-bs-toggle="modal" data-bs-target="#rejectModal@item.Id">
+                                            Reject
+                                        </button>
+                                    }
+                                    else if (string.Equals(item.Status, "Approved", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        if (string.Equals(item.ActualPaymentStatus, "Disbursed", StringComparison.OrdinalIgnoreCase) || 
+                                            string.Equals(item.ActualPaymentStatus, "Paid", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <span class="badge bg-primary-soft text-primary border border-primary-subtle px-3 py-2">
+                                                <i data-lucide="check-check" class="me-1" style="width: 14px; height: 14px;"></i> Funds Transferred
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="DisbursePayment" method="post" class="m-0">
+                                                <input type="hidden" name="paymentId" value="@item.PaymentId" />
+                                                <button type="submit" class="btn btn-sm btn-brand px-3 @(item.CitizenAcknowledged ? "" : "disabled")">
+                                                    Disburse <i data-lucide="send" class="ms-1" style="width: 12px; height: 12px;"></i>
+                                                </button>
+                                            </form>
+                                            
+                                            @if (!item.CitizenAcknowledged)
+                                            {
+                                                <span class="text-muted small italic">Awaiting Sign-off</span>
+                                            }
+                                        }
+                                    }
+                                    else if (string.Equals(item.Status, "Rejected", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="badge bg-danger-soft text-danger border border-danger-subtle px-3 py-2">Account Closed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Processed</span>
+                                    }
+                                </div>
+
+                                <!-- Reject Modal -->
+                                <div class="modal fade" id="rejectModal@item.Id" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header border-0 pb-0">
+                                                <h5 class="modal-title fw-bold">Reject Invoice #@item.Id</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form asp-action="RejectInvoice" method="post">
+                                                <div class="modal-body text-start">
+                                                    <input type="hidden" name="InvoiceId" value="@item.Id" />
+                                                    <div class="mb-3">
+                                                        <label class="form-label small fw-bold">Reason for Rejection</label>
+                                                        <textarea name="Reason" class="form-control" rows="3" required placeholder="Budget overreach, incomplete work, etc."></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer border-0 pt-0">
+                                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5 clearbit-card clearbit-card-glass shadow-sm mx-auto" style="max-width: 600px;">
+            <i data-lucide="file-text" class="text-muted mb-3" style="width: 48px; height: 48px; opacity: 0.5;"></i>
+            <h4 class="fw-bold">No Invoices Submitted</h4>
+            <p class="text-muted">No contractors have submitted billing requests for their assigned repairs yet.</p>
+        </div>
+    }
+</div>

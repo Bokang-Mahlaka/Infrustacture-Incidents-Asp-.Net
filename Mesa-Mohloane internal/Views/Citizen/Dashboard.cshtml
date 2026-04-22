@@ -1,0 +1,169 @@
+@model List<Mesa_Mohloane_internal.Models.IncidentViewModel>
+@{
+    ViewData["Title"] = "Citizen Impact Center";
+}
+
+<div class="db-container">
+    <!-- Header Section -->
+    <div class="db-greeting d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="db-badge db-badge-info">LESOTHO INFRASTRUCTURE PORTAL</span>
+                <div class="text-success small d-flex align-items-center gap-1"><div class="rounded-circle bg-success" style="width: 6px; height: 6px;"></div> System Online</div>
+            </div>
+            <h1>Impact Center</h1>
+            <p class="mb-0">Monitoring and reporting civil infrastructure across the Kingdom.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Report" class="btn-brand text-decoration-none d-flex align-items-center gap-2 shadow-sm">
+                <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+                Report Issue
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="db-grid mb-5">
+        <div class="col-span-4">
+            <div class="db-stat-card border-0 shadow-sm" style="background: #F8FAFC;">
+                <div class="stat-label">System-wide Reports</div>
+                <div class="stat-value">2,841</div>
+                <div class="stat-delta text-muted">Active community signals</div>
+            </div>
+        </div>
+        <div class="col-span-4">
+            <div class="db-stat-card border-0 shadow-sm" style="background: #F8FAFC;">
+                <div class="stat-label">Resolution Rate</div>
+                <div class="stat-value">92<span style="font-size: 0.9rem;">%</span></div>
+                <div class="stat-delta text-success"><i data-lucide="trending-up"></i> +2.4% this month</div>
+            </div>
+        </div>
+        <div class="col-span-4">
+            <div class="db-stat-card border-0 shadow-sm" style="background: #F8FAFC;">
+                <div class="stat-label">Average Response</div>
+                <div class="stat-value">4.2<span style="font-size: 0.9rem;">d</span></div>
+                <div class="stat-delta text-muted">Time to contractor dispatch</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- The Infrastructure Feed (Card Grid) -->
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold m-0" style="letter-spacing: -0.02em;">Infrastructure Feed</h5>
+        <div class="d-flex gap-3">
+            <a href="#" class="text-muted small fw-bold text-decoration-none">View All <i data-lucide="arrow-right" class="ms-1" style="width: 14px; height: 14px;"></i></a>
+        </div>
+    </div>
+
+    <div class="db-card-grid">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <div class="db-visual-card">
+                    <div class="card-top">
+                        <span class="card-category">@item.Category</span>
+                        @if(item.Status == "Open") {
+                            <span class="db-badge db-badge-info">Open</span>
+                        } else if (item.Status == "InProgress") {
+                            <span class="db-badge db-badge-warning">Repairing</span>
+                        } else if (item.Status == "Completed") {
+                            <span class="db-badge db-badge-success">Completed</span>
+                        } else {
+                            <span class="db-badge bg-light text-muted border">@item.Status</span>
+                        }
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title">@item.Title</div>
+                        <div class="card-location">
+                            <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
+                            @item.Location
+                        </div>
+                        <p class="small text-muted line-clamp-2">@item.Description</p>
+                    </div>
+                    <div class="card-footer">
+                        <div class="small text-muted fw-bold">@item.CreatedAt.ToString("MMM dd, yyyy")</div>
+                        @if (item.Status == "Completed" && !item.IsAcknowledged)
+                        {
+                            <a asp-action="AcknowledgeWork" asp-route-incidentId="@item.Id" class="btn btn-sm btn-brand px-3 py-1 fw-bold">
+                                Verify Work
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="#" class="text-brand small fw-bold text-decoration-none d-flex align-items-center gap-1">
+                                Details <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-span-12">
+                <div class="db-empty bg-white border rounded-4 py-5">
+                    <i data-lucide="search"></i>
+                    <h5 class="fw-bold">No active reports</h5>
+                    <p class="text-muted">The infrastructure queue is clear in your area.</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Impact Section (Replaced the heavy sidebar) -->
+    <div class="impact-banner shadow-lg">
+        <div class="impact-banner-content">
+            <div class="d-flex align-items-center gap-2 mb-2 opacity-75">
+                <i data-lucide="users" style="width: 18px; height: 18px;"></i>
+                <span class="small fw-bold text-uppercase">Citizen Contribution</span>
+            </div>
+            <h4>Community Watch is Active</h4>
+            <p>Join over 2,400 Basotho in securing our kingdom's future. Every report contributes to national development.</p>
+        </div>
+        <div class="flex-shrink-0">
+            <a href="#" class="btn btn-light px-4 py-3 fw-bold text-brand shadow-sm">
+                View Community Leaderboard <i data-lucide="arrow-right" class="ms-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Bottom Row (Activity) -->
+    <div class="db-grid mt-5">
+        <div class="col-span-6">
+            <div class="db-card border-0 bg-transparent">
+                <h6 class="fw-bold mb-4">Latest Platform Activity</h6>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="rounded-circle bg-white border d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; flex-shrink: 0;">
+                            <i data-lucide="check" style="width: 16px; height: 16px; color: #10B981;"></i>
+                        </div>
+                        <div>
+                            <div class="small fw-bold">Road repair completed in Maseru</div>
+                            <p class="small text-muted mb-0">Project #284 has been successfully verified by community members.</p>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="rounded-circle bg-white border d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; flex-shrink: 0;">
+                            <i data-lucide="info" style="width: 16px; height: 16px; color: var(--brand-primary);"></i>
+                        </div>
+                        <div>
+                            <div class="small fw-bold">Algorithm Update v2.4</div>
+                            <p class="small text-muted mb-0">Contractor evaluation speed improved by 20% system-wide.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-span-6">
+            <div class="db-card border-0 bg-light-soft rounded-4 p-4 d-flex justify-content-center">
+                <div class="text-center">
+                    <h6 class="fw-bold mb-2">Need Assistance?</h6>
+                    <p class="small text-muted mb-3">Our support team is available for district reporting queries.</p>
+                    <a href="mailto:support@mesamohloane.gov.ls" class="btn btn-sm btn-outline-secondary px-4 fw-bold">Contact Support</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

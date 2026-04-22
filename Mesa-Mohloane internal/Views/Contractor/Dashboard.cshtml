@@ -1,0 +1,178 @@
+@model List<Mesa_Mohloane_internal.Models.IncidentViewModel>
+@{
+    ViewData["Title"] = "Contractor Operations Hub";
+}
+
+<div class="db-container">
+    <!-- Operational Status Banner -->
+    <div class="db-card mb-4 border-0 shadow-sm" style="background: var(--text-heading); color: white;">
+        <div class="db-card-body d-flex justify-content-between align-items-center py-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-success rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                    <i data-lucide="shield-check" style="width: 18px; height: 18px; color: white;"></i>
+                </div>
+                <div>
+                    <div class="small fw-bold opacity-75 text-uppercase">Operational Status: COMPLIANT</div>
+                    <div class="text-white-50 small">Tax Clearance and Civil Engineering Certifications are valid until Dec 2026.</div>
+                </div>
+            </div>
+            <a href="#" class="btn btn-sm btn-light py-2 px-4 fw-bold text-dark border-0">Refresh Documentation</a>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <div class="db-greeting d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="db-badge db-badge-success">CONTRACTOR PORTAL</span>
+                <span class="text-muted small fw-bold">Marketplace Live</span>
+            </div>
+            <h1>Good morning, @(User.Identity?.Name?.Split(' ')[0] ?? "Partner").</h1>
+            <p class="mb-0">Manage your active infrastructure contracts and exploration bids.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="MyJobs" class="btn-brand text-decoration-none d-flex align-items-center gap-2 shadow-sm">
+                <i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>
+                Manage My Jobs
+            </a>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="db-grid mb-5">
+        <div class="col-span-4">
+            <div class="db-stat-card border-0 shadow-sm" style="background: #F8FAFC;">
+                <div class="stat-label">Market Opportunities</div>
+                <div class="stat-value">@(Model?.Count ?? 0)</div>
+                <div class="stat-delta text-brand"><i data-lucide="chevron-right"></i> Available for bidding</div>
+            </div>
+        </div>
+        <div class="col-span-4">
+            <div class="db-stat-card border-0 shadow-sm" style="background: #F8FAFC;">
+                <div class="stat-label">Active Contracts</div>
+                <div class="stat-value">@ViewBag.ActiveJobsCount</div>
+                <div class="stat-delta text-muted">Awaiting milestone completion</div>
+            </div>
+        </div>
+        <div class="col-span-4">
+            <div class="db-stat-card border-0 shadow-sm" style="background: #F8FAFC;">
+                <div class="stat-label">Current Rating</div>
+                <div class="stat-value">4.9<span style="font-size: 0.9rem;">/5</span></div>
+                <div class="stat-delta text-success"><i data-lucide="star"></i> Performance certified</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tender Grid -->
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold m-0" style="letter-spacing: -0.02em;">Tender Marketplace</h5>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-light border px-3 fw-bold small">Area Filter</button>
+            <button class="btn btn-sm btn-light border px-3 fw-bold small">Category</button>
+        </div>
+    </div>
+
+    <div class="db-card-grid">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <div class="db-visual-card">
+                    <div class="card-top">
+                        <span class="card-category">@item.Category</span>
+                        @if (ViewBag.SubmittedProposals != null && ((Dictionary<int, int>)ViewBag.SubmittedProposals).ContainsKey(item.Id))
+                        {
+                            <span class="db-badge db-badge-success">Applied</span>
+                        }
+                        else
+                        {
+                            <span class="db-badge db-badge-info">Open Bid</span>
+                        }
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title">@item.Title</div>
+                        <div class="card-location">
+                            <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
+                            @item.Location
+                        </div>
+                        <p class="small text-muted line-clamp-2">@item.Description</p>
+                    </div>
+                    <div class="card-footer">
+                        <div class="text-end">
+                            <div class="small text-muted mb-0">Closing In</div>
+                            <div class="small fw-bold text-danger">48h 20m</div>
+                        </div>
+                        
+                        @if (ViewBag.SubmittedProposals != null && ((Dictionary<int, int>)ViewBag.SubmittedProposals).ContainsKey(item.Id))
+                        {
+                            <a asp-action="EditProposal" asp-route-id="@(((Dictionary<int, int>)ViewBag.SubmittedProposals)[item.Id])" class="btn btn-sm btn-outline-secondary px-3 fw-bold">
+                                Modify Bid
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-action="SubmitProposal" asp-route-incidentId="@item.Id" class="btn btn-sm btn-brand px-4 py-1 fw-bold">
+                                Apply Now
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-span-12">
+                <div class="db-empty bg-white border rounded-4 py-5">
+                    <i data-lucide="inbox"></i>
+                    <h5 class="fw-bold">No Open Tenders</h5>
+                    <p class="text-muted small">Check back later or ensure your certification is up to date.</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Bottom Secondary Section -->
+    <div class="db-grid mt-5">
+        <div class="col-span-8">
+            <div class="db-card border-0 bg-transparent">
+                <h6 class="fw-bold mb-4">Milestone Deadlines</h6>
+                <div class="activity-list">
+                    @if (ViewBag.ActiveJobsCount > 0)
+                    {
+                        <div class="activity-item">
+                            <div class="rounded-circle bg-danger-soft d-flex align-items-center justify-content-center" style="width: 8px; height: 8px; flex-shrink: 0; margin-top: 14px;"></div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between">
+                                    <div class="fw-bold small">Maseru Central Bridge Rehabilitation</div>
+                                    <span class="text-danger small fw-bold">In 3 Days</span>
+                                </div>
+                                <p class="small text-muted mb-0">Structural assessment report due for Phase 1 completion.</p>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="rounded-circle bg-warning-soft d-flex align-items-center justify-content-center" style="width: 8px; height: 8px; flex-shrink: 0; margin-top: 14px;"></div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between">
+                                    <div class="fw-bold small">Roma District Road Repair</div>
+                                    <span class="text-warning small fw-bold">In 12 Days</span>
+                                </div>
+                                <p class="small text-muted mb-0">Final asphalt layer verification required.</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-span-4">
+             <div class="db-card border-0 rounded-4 p-4 d-flex flex-column h-100" style="background: linear-gradient(135deg, var(--brand-secondary) 0%, #6D28D9 100%); color: white;">
+                <h6 class="fw-bold mb-3">Tender Analytics</h6>
+                <p class="small opacity-75 mb-4">Your bid success rate has increased by 12% following the latest algorithm update.</p>
+                <div class="mt-auto">
+                    <a href="#" class="btn btn-sm btn-light w-100 fw-bold py-2" style="color: var(--brand-secondary);">Optimization Tips</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

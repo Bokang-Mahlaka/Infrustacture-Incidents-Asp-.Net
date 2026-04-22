@@ -1,0 +1,164 @@
+@model Mesa_Mohloane_internal.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Log In";
+    ViewData["HideNavAndFooter"] = true;
+}
+
+<div class="d-flex min-vh-100 w-100">
+    <!-- Left Panel (Graphic) -->
+    <div class="d-none d-lg-flex flex-column justify-content-center position-relative overflow-hidden w-50" style="background: linear-gradient(135deg, #F8FAFC 0%, #F5F3FF 100%);">
+        
+        <div class="position-absolute top-0 end-0 p-4">
+            <div class="d-flex gap-1 opacity-50">
+                <div class="rounded-circle" style="width: 8px; height: 8px; background: var(--brand-primary);"></div>
+                <div class="rounded-circle" style="width: 8px; height: 8px; background: var(--brand-secondary);"></div>
+                <div class="rounded-circle" style="width: 8px; height: 8px; background: var(--border-light);"></div>
+            </div>
+        </div>
+
+        <div class="p-5" style="max-width: 600px; margin: 0 auto; z-index: 2;">
+            <div class="mb-5">
+                <h1 style="color: var(--brand-primary); font-weight: 800; font-size: 4rem; letter-spacing: -2px; margin-bottom: 0;">Empower</h1>
+                <p style="color: var(--text-muted); font-size: 1.5rem; letter-spacing: -0.5px; font-weight: 400;">your infrastructure oversight</p>
+            </div>
+
+            <!-- Graphic Card Mockup -->
+            <div class="bg-white rounded-4 shadow-lg p-4 position-relative" style="transform: perspective(1000px) rotateY(5deg) rotateX(2deg); border: 1px solid rgba(0,0,0,0.02); height: 320px;">
+                 <div class="d-flex justify-content-between align-items-center mb-4">
+                      <div class="d-inline-flex px-3 py-1 bg-light rounded-pill border border-light small text-muted">Oct 1, 2025 - Oct 30, 2025 <i data-lucide="chevron-down" class="ms-1" style="width:14px; height:14px;"></i></div>
+                      <div class="d-flex gap-2">
+                           <div class="bg-dark text-white rounded-pill px-3 py-1 small fw-bold">Export <i data-lucide="download" class="ms-1" style="width:12px; height:12px;"></i></div>
+                           <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;"><i data-lucide="plus" style="width: 14px; height: 14px;"></i></div>
+                      </div>
+                 </div>
+
+                 <div class="row g-3 mb-4">
+                     <div class="col-6">
+                         <div class="border rounded-3 p-3">
+                              <div class="small text-muted mb-1">Project Retention</div>
+                              <div class="fs-4 fw-bold" style="letter-spacing: -1px;">84.9%</div>
+                              <div class="d-inline-flex gap-1 text-success align-items-center px-1 rounded" style="background: #ECFDF5; font-size: 0.7rem;"><i data-lucide="arrow-up" style="width:10px; height:10px;"></i> 12.75%</div>
+                         </div>
+                     </div>
+                     <div class="col-6">
+                         <div class="rounded-3 p-3 border-0" style="background: linear-gradient(135deg, #F3F4F6 0%, #FAFAFA 100%);">
+                              <div class="d-flex align-items-center gap-1 small text-muted mb-1">Needs Attention <i data-lucide="info" style="width: 12px; height: 12px;"></i></div>
+                              <div class="fs-4 fw-bold" style="letter-spacing: -1px;">12</div>
+                              <div class="small text-muted mt-1">Pending audits</div>
+                              <div class="mt-2 text-end">
+                                  <span class="bg-dark text-white rounded-pill px-2 py-1" style="font-size: 0.65rem;">See Details ></span>
+                              </div>
+                         </div>
+                     </div>
+                 </div>
+                 
+                 <!-- SVG Graph Line -->
+                 <div class="position-relative mt-4">
+                     <div class="small fw-bold text-muted mb-2">Average disbursement</div>
+                     <svg viewBox="0 0 400 60" class="w-100 overflow-visible">
+                         <path d="M0,40 C30,60 50,10 80,40 C110,70 140,20 170,40 C200,60 220,10 250,30 C280,50 300,10 330,30 C360,50 380,20 400,30" fill="none" stroke="#E2E8F0" stroke-width="3" stroke-linecap="round"/>
+                         <path d="M0,50 C40,70 60,30 90,50 C120,70 150,20 180,40 C210,60 240,10 280,40 L280,40" fill="none" stroke="#4F46E5" stroke-width="3" stroke-linecap="round"/>
+                         <circle cx="180" cy="40" r="5" fill="#4F46E5" stroke="white" stroke-width="2"/>
+                         <rect x="190" y="25" width="80" height="25" rx="4" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+                         <text x="195" y="42" font-size="10" font-weight="bold" fill="#0F172A">M 21,845</text>
+                     </svg>
+                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel (Form) -->
+    <div class="w-100 d-flex flex-column" style="max-width: 100%; @(ViewData["HideNavAndFooter"] != null ? "flex: 1;" : "flex: 0 0 50%; max-width: 50%;")">
+        <div class="my-auto mx-auto p-4 p-md-5 w-100" style="max-width: 480px;">
+            <!-- Brand Logo -->
+            <div class="text-center mb-5 pb-3">
+                <a href="/" class="text-decoration-none d-inline-flex align-items-center gap-2">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="28" height="28" rx="8" fill="var(--brand-primary)" />
+                        <path d="M14 7L8 13L14 19L20 13L14 7Z" fill="white" opacity="0.9"/>
+                        <path d="M14 10L11 13L14 16L17 13L14 10Z" fill="white" opacity="0.5"/>
+                    </svg>
+                    <span class="fs-4 fw-bold" style="color: var(--text-heading); letter-spacing: -0.5px;">Mesa Mohloane</span>
+                </a>
+            </div>
+
+            <!-- Header -->
+            <div class="mb-4 text-start">
+                <h2 class="fw-bold fs-2" style="color: var(--text-heading); letter-spacing: -1px;">Sign In</h2>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Please login to continue</p>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success d-flex align-items-center border-0 mb-4" style="background: #ECFDF5; color: #065F46;" role="alert">
+                    <i data-lucide="check-circle" class="me-2" style="width: 18px; height: 18px;"></i> 
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
+            <form asp-action="Login" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3 small fw-bold"></div>
+
+                <div class="mb-4">
+                    <label asp-for="Email" class="form-label fw-bold mb-2" style="font-size: 0.85rem; color: var(--text-heading);">Email</label>
+                    <input asp-for="Email" class="form-control px-3 py-3 border-0" style="background: #F3F4F6; border-radius: 8px; font-size: 0.95rem;" placeholder=" " />
+                    <span asp-validation-for="Email" class="field-validation-error mt-1"></span>
+                </div>
+
+                <div class="mb-4 position-relative">
+                    <label asp-for="Password" class="form-label fw-bold mb-2" style="font-size: 0.85rem; color: var(--text-heading);">Password</label>
+                    <div class="position-relative">
+                        <input asp-for="Password" id="passwordInput" type="password" class="form-control px-3 py-3 border-0" style="background: #F3F4F6; border-radius: 8px; font-size: 0.95rem; padding-right: 40px;" placeholder=" " />
+                        <i data-lucide="eye" id="togglePasswordBtn" class="position-absolute text-muted" style="right: 15px; top: 15px; width: 20px; height: 20px; cursor: pointer; opacity: 0.6;"></i>
+                    </div>
+                    <span asp-validation-for="Password" class="field-validation-error mt-1"></span>
+                </div>
+
+                <button type="submit" class="btn w-100 text-white fw-bold py-3 mb-4 mt-3" style="background: var(--brand-primary); border-radius: 8px; border: none; font-size: 1rem; transition: background 0.2s;">
+                    Login
+                </button>
+                
+                <div class="text-center">
+                    <span style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;">No Account Yet? </span>
+                    <a asp-action="Register" class="text-decoration-none fw-bold" style="color: var(--brand-primary); font-size: 0.9rem;">Get Yours Now</a>
+                </div>
+            </form>
+
+            <!-- Footer Links -->
+            <div class="d-flex justify-content-center gap-4 mt-5 pt-3">
+                <a href="#" class="text-decoration-none" style="color: var(--text-muted); font-size: 0.8rem; font-weight: 500;">Privacy Policy</a>
+                <a href="#" class="text-decoration-none" style="color: var(--text-muted); font-size: 0.8rem; font-weight: 500;">Terms</a>
+                <a href="#" class="text-decoration-none" style="color: var(--text-muted); font-size: 0.8rem; font-weight: 500;">FAQ</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+            const passwordInput = document.getElementById('passwordInput');
+
+            if (togglePasswordBtn && passwordInput) {
+                togglePasswordBtn.addEventListener('click', function() {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    
+                    // Optionally toggle icon if you want (e.g., eye to eye-off)
+                    if (type === 'text') {
+                        togglePasswordBtn.setAttribute('data-lucide', 'eye-off');
+                        togglePasswordBtn.style.opacity = '1';
+                    } else {
+                        togglePasswordBtn.setAttribute('data-lucide', 'eye');
+                        togglePasswordBtn.style.opacity = '0.6';
+                    }
+                    
+                    // Re-render the specific lucide icon
+                    lucide.createIcons();
+                });
+            }
+        });
+    </script>
+}

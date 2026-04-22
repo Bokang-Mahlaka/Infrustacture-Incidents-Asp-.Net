@@ -1,0 +1,149 @@
+@model Mesa_Mohloane_internal.Models.IncidentViewModel
+@{
+    ViewData["Title"] = "Incident Details — " + Model.Title;
+}
+
+<div class="container section-padding">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Dashboard" class="text-brand text-decoration-none">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">#@Model.Id</li>
+        </ol>
+    </nav>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i data-lucide="check-circle" class="me-2" style="width: 18px; height: 18px;"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="clearbit-card shadow-sm mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="badge" style="background: var(--bg-offwhite); color: var(--text-heading); border: 1px solid var(--border-light); font-size: 0.9rem;">
+                        <i data-lucide="tag" class="me-1" style="width: 14px; height: 14px;"></i> @Model.Category
+                    </span>
+                    <span class="text-muted small fw-bold">REF: MS-@Model.Id-2026</span>
+                </div>
+
+                <h1 class="fw-extrabold text-heading mb-3">@Model.Title</h1>
+                
+                <div class="d-flex align-items-center mb-4 pb-4 border-bottom">
+                    <div class="bg-light p-3 rounded-circle me-3">
+                        <i data-lucide="map-pin" class="text-brand" style="width: 24px; height: 24px;"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0">Location Intelligence</h6>
+                        <p class="text-muted mb-0">@Model.Location</p>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="fw-bold mb-3 d-flex align-items-center">
+                        <i data-lucide="info" class="text-brand me-2" style="width: 20px; height: 20px;"></i> 
+                        Detailed Description
+                    </h5>
+                    <p class="text-secondary lead" style="line-height: 1.8;">@Model.Description</p>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.PhotoUrl))
+                {
+                    <div class="mb-2">
+                        <h5 class="fw-bold mb-3 d-flex align-items-center">
+                            <i data-lucide="camera" class="text-brand me-2" style="width: 20px; height: 20px;"></i>
+                            Photo Evidence
+                        </h5>
+                        <div class="rounded-4 overflow-hidden shadow-sm border">
+                            <img src="@Model.PhotoUrl" alt="Incident Photo" class="img-fluid w-100" style="max-height: 500px; object-fit: cover;" />
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Sidebar / Actions -->
+        <div class="col-lg-4">
+            <!-- Reporter Card -->
+            <div class="clearbit-card shadow-sm mb-4" style="border-left: 4px solid var(--brand-primary);">
+                <h6 class="text-uppercase ls-1 fw-bold text-muted small mb-4">Reporter Profile</h6>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="avatar-sm bg-brand-light text-brand rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width: 45px; height: 45px; background: #eef2ff; color: var(--brand-primary);">
+                        @(Model.CitizenName?[0].ToString() ?? "C")
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0">@Model.CitizenName</h6>
+                        <span class="text-muted small">Registered Citizen</span>
+                    </div>
+                </div>
+                <div class="small text-muted py-3 border-top border-bottom mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Reported On:</span>
+                        <span class="text-dark fw-bold">@Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Reliability Score:</span>
+                        <span class="text-success fw-bold">High <i data-lucide="shield-check" class="ms-1" style="width: 12px; height: 12px;"></i></span>
+                    </div>
+                </div>
+                <p class="small text-muted mb-0">
+                    <i data-lucide="help-circle" class="me-1" style="width: 12px; height: 12px;"></i>
+                    This citizen has reported 3 infrastructure items previously.
+                </p>
+            </div>
+
+            <!-- Action Panel -->
+            <div class="clearbit-card shadow-sm">
+                <h6 class="text-uppercase ls-1 fw-bold text-muted small mb-4">Command Center Actions</h6>
+                
+                <div class="mb-4">
+                    <label class="small fw-bold text-muted d-block mb-2">Current Lifecycle Phase</label>
+                    <div class="d-flex align-items-center">
+                        <div class="status-dot @(Model.Status == "Reported" ? "bg-warning" : "bg-success") me-2" style="width: 10px; height: 10px; border-radius: 50%;"></div>
+                        <span class="fw-extrabold text-heading">@Model.Status</span>
+                    </div>
+                </div>
+
+                <div class="vstack gap-3">
+                    @if (Model.Status == "Reported" || Model.Status == "Verified")
+                    {
+                        <div class="p-3 bg-light rounded-3 mb-2 small text-muted">
+                            <i data-lucide="lightbulb" class="text-brand me-1" style="width: 14px; height: 14px;"></i>
+                            Publishing this incident will open it for competitive bidding in the national marketplace.
+                        </div>
+                        <form asp-action="PublishIncident" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-brand w-100 py-3 fw-bold">
+                                <i data-lucide="send" class="me-2" style="width: 18px; height: 18px;"></i> Publish to Marketplace
+                            </button>
+                        </form>
+                    }
+
+                    @if (Model.Status == "Published")
+                    {
+                        <div class="p-3 bg-light rounded-3 mb-2 small text-muted">
+                            @Model.ProposalCount contractors have submitted technical bids for this repair.
+                        </div>
+                        <a asp-action="Manage" asp-route-id="@Model.Id" class="btn btn-brand w-100 py-3 fw-bold">
+                            <i data-lucide="cpu" class="me-2" style="width: 18px; height: 18px;"></i> Evaluate Algorithm Ranking
+                        </a>
+                    }
+                    
+                    @if (Model.Status == "Assigned" || Model.Status == "Completed")
+                    {
+                        <a asp-action="Invoices" class="btn btn-outline-secondary w-100 py-3 fw-bold">
+                            <i data-lucide="file-text" class="me-2" style="width: 18px; height: 18px;"></i> Review Financial Claims
+                        </a>
+                    }
+
+                    <button type="button" class="btn btn-light w-100 py-3 text-muted fw-bold">
+                        <i data-lucide="archive" class="me-2" style="width: 18px; height: 18px;"></i> Archive Record
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

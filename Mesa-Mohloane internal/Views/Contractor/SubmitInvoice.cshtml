@@ -1,0 +1,52 @@
+@model Mesa_Mohloane_internal.Models.CreateInvoiceViewModel
+@{
+    ViewData["Title"] = "Submit Final Invoice";
+}
+
+<div class="container section-padding">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <h2 class="fw-bold mb-4">Final Project Billing</h2>
+            <p class="text-muted mb-5">Provide the final reconciliation of costs for this repair project. Admins will review the deviation from your original bid before approving payment.</p>
+
+            <div class="clearbit-card shadow-sm">
+                <form asp-action="SubmitInvoice" method="post">
+                    <input type="hidden" asp-for="ProposalId" />
+                    
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3 small fw-bold"></div>
+
+                    <div class="form-floating mb-4">
+                        <input asp-for="TotalAmount" class="form-control" placeholder="0.00" type="number" step="0.01" />
+                        <label asp-for="TotalAmount" class="text-muted small">Final Total Cost (LSL)</label>
+                        <span asp-validation-for="TotalAmount" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <textarea asp-for="Description" class="form-control" placeholder="Description of final work" style="height: 120px;"></textarea>
+                        <label asp-for="Description" class="text-muted small">Summary of Work Completed</label>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="p-3 bg-light rounded-3 mb-4 border d-flex align-items-center">
+                        <i data-lucide="shield-check" class="text-primary me-3" style="width: 24px; height: 24px;"></i>
+                        <p class="small mb-0 text-muted">
+                            Our system automatically validates invoices against original bids. Significant deviations may trigger an audit review.
+                        </p>
+                    </div>
+
+                    <button type="submit" class="btn-brand w-100 py-3 mt-2 fw-bold" style="font-size: 1.1rem;">
+                        Submit for Approval <i data-lucide="send" class="ms-2" style="width: 18px; height: 18px;"></i>
+                    </button>
+                    
+                    <div class="text-center mt-3">
+                        <a asp-action="MyJobs" class="text-muted small text-decoration-none">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
