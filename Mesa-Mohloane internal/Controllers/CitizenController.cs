@@ -48,6 +48,18 @@ namespace Mesa_Mohloane_internal.Controllers
             content.Add(new StringContent(model.Category), "Category");
             content.Add(new StringContent(model.Location), "Location");
 
+            if (model.Latitude.HasValue)
+                content.Add(new StringContent(model.Latitude.Value.ToString()), "Latitude");
+            if (model.Longitude.HasValue)
+                content.Add(new StringContent(model.Longitude.Value.ToString()), "Longitude");
+
+            if (model.Photo != null && model.Photo.Length > 0)
+            {
+                var photoContent = new StreamContent(model.Photo.OpenReadStream());
+                photoContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(model.Photo.ContentType);
+                content.Add(photoContent, "Photo", model.Photo.FileName);
+            }
+
             var response = await _apiClient.PostFormAsync<ApiResponse<IncidentViewModel>>("/api/Incidents", content);
 
             if (response != null && response.Success)

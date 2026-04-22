@@ -30,7 +30,7 @@
         <div class="col-lg-6 offset-lg-1 order-1 order-lg-2">
             <h2 class="fw-bold mb-4">Report an issue.</h2>
             <div class="clearbit-card shadow-sm">
-                <form asp-action="Report" method="post">
+                <form asp-action="Report" method="post" enctype="multipart/form-data">
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3 small fw-bold"></div>
 
                     <div class="form-floating mb-4">
@@ -61,6 +61,22 @@
                         <span asp-validation-for="Description" class="text-danger small"></span>
                     </div>
 
+                    <div class="mb-4">
+                        <label class="text-heading fw-bold small mb-2">Photo Evidence (Optional)</label>
+                        <div class="border border-2 border-dashed rounded-3 p-4 text-center" id="photoDropZone" style="border-color: #6c757d !important;">
+                            <input type="file" asp-for="Photo" accept="image/jpeg,image/png,image/gif,image/webp" class="d-none" id="photoInput" onchange="previewPhoto(this)" />
+                            <label for="photoInput" class="w-100 text-center p-4 cursor-pointer mb-0">
+                                <i data-lucide="camera" class="text-muted mb-2" style="width: 32px; height: 32px;"></i>
+                                <p class="text-muted small mb-0">Click to upload or drag and drop</p>
+                                <p class="text-muted small">JPG, PNG, GIF or WebP (max 5MB)</p>
+                            </label>
+                        </div>
+                        <div id="photoPreview" class="mt-2 d-none">
+                            <img id="previewImage" src="" alt="Preview" class="img-fluid rounded" style="max-height: 200px; object-fit: cover;" />
+                            <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="removePhoto()">Remove Photo</button>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn-brand w-100 py-3 mt-2 fw-bold" style="font-size: 1.1rem;">
                         Submit Report <i data-lucide="arrow-right" class="ms-2" style="width: 18px; height: 18px;"></i>
                     </button>
@@ -76,4 +92,24 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function previewPhoto(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImage').src = e.target.result;
+                    document.getElementById('photoPreview').classList.remove('d-none');
+                    document.getElementById('photoDropZone').classList.add('d-none');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function removePhoto() {
+            document.getElementById('photoInput').value = '';
+            document.getElementById('previewImage').src = '';
+            document.getElementById('photoPreview').classList.add('d-none');
+            document.getElementById('photoDropZone').classList.remove('d-none');
+        }
+    </script>
 }
