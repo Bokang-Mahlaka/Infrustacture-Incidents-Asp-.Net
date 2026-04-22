@@ -9,6 +9,8 @@ namespace Mesa_Mohloane_internal.Models
         public string Description { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? PhotoUrl { get; set; }
         public string? CitizenName { get; set; }

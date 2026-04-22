@@ -73,6 +73,20 @@ namespace Mesa_Mohloane_internal.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var response = await _apiClient.GetAsync<ApiResponse<IncidentViewModel>>($"/api/Incidents/{id}");
+
+            if (response != null && response.Success && response.Data != null)
+            {
+                return View(response.Data);
+            }
+
+            TempData["ErrorMessage"] = "Incident not found.";
+            return RedirectToAction("Dashboard");
+        }
+
+        [HttpGet]
         public IActionResult Rate(int incidentId)
         {
             return View(new CreateRatingViewModel { IncidentId = incidentId });
