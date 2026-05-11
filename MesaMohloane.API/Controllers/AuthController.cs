@@ -55,7 +55,8 @@ namespace MesaMohloane.API.Controllers
                 Email = dto.Email,
                 FullName = dto.FullName,
                 PhoneNumber = dto.PhoneNumber,
-                CompanyName = dto.Role == "Contractor" ? dto.CompanyName : null
+                CompanyName = dto.Role == "Contractor" ? dto.CompanyName : null,
+                RegistrationStatus = dto.Role == "Contractor" ? RegistrationStatus.Pending : RegistrationStatus.Approved
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
@@ -99,6 +100,19 @@ namespace MesaMohloane.API.Controllers
             if (!result.Succeeded)
             {
                 return Unauthorized(ApiResponse<AuthResponseDto>.ErrorResponse("Invalid email or password."));
+            }
+
+            // Check if user is approved
+            if (user.RegistrationStatus == RegistrationStatus.Pending)
+            {
+                return BadRequest(ApiResponse<AuthResponseDto>.ErrorResponse(
+                    "Your registration is currently pending administrative approval. You will be notified once reviewed."));
+            }
+
+            if (user.RegistrationStatus == RegistrationStatus.Rejected)
+            {
+                return BadRequest(ApiResponse<AuthResponseDto>.ErrorResponse(
+                    "Your registration has been rejected. Please contact support for more information."));
             }
 
             var roles = await _userManager.GetRolesAsync(user);

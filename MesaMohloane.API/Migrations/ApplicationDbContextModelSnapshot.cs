@@ -85,6 +85,9 @@ namespace MesaMohloane.API.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<int>("RegistrationStatus")
+                        .HasColumnType("int");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -284,6 +287,10 @@ namespace MesaMohloane.API.Migrations
 
                     b.Property<double>("DeviationPercentage")
                         .HasColumnType("float");
+
+                    b.Property<string>("ProofOfWorkImageUrls")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<int>("ProposalId")
                         .HasColumnType("int");

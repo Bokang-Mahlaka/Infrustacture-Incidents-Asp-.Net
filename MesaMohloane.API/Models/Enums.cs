@@ -52,4 +52,11 @@ namespace MesaMohloane.API.Models
         Equipment,
         Other
     }
+
+    public enum RegistrationStatus
+    {
+        Pending,
+        Approved,
+        Rejected
+    }
 }

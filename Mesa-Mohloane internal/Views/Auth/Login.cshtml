@@ -6,63 +6,13 @@
 
 <div class="d-flex min-vh-100 w-100">
     <!-- Left Panel (Graphic) -->
-    <div class="d-none d-lg-flex flex-column justify-content-center position-relative overflow-hidden w-50" style="background: linear-gradient(135deg, #F8FAFC 0%, #F5F3FF 100%);">
+    <div class="d-none d-lg-flex flex-column justify-content-center align-items-center position-relative overflow-hidden w-50" style="background: url('/images/login post.png') center/cover no-repeat; background-color: #F8FAFC;">
         
         <div class="position-absolute top-0 end-0 p-4">
             <div class="d-flex gap-1 opacity-50">
                 <div class="rounded-circle" style="width: 8px; height: 8px; background: var(--brand-primary);"></div>
                 <div class="rounded-circle" style="width: 8px; height: 8px; background: var(--brand-secondary);"></div>
                 <div class="rounded-circle" style="width: 8px; height: 8px; background: var(--border-light);"></div>
-            </div>
-        </div>
-
-        <div class="p-5" style="max-width: 600px; margin: 0 auto; z-index: 2;">
-            <div class="mb-5">
-                <h1 style="color: var(--brand-primary); font-weight: 800; font-size: 4rem; letter-spacing: -2px; margin-bottom: 0;">Empower</h1>
-                <p style="color: var(--text-muted); font-size: 1.5rem; letter-spacing: -0.5px; font-weight: 400;">your infrastructure oversight</p>
-            </div>
-
-            <!-- Graphic Card Mockup -->
-            <div class="bg-white rounded-4 shadow-lg p-4 position-relative" style="transform: perspective(1000px) rotateY(5deg) rotateX(2deg); border: 1px solid rgba(0,0,0,0.02); height: 320px;">
-                 <div class="d-flex justify-content-between align-items-center mb-4">
-                      <div class="d-inline-flex px-3 py-1 bg-light rounded-pill border border-light small text-muted">Oct 1, 2025 - Oct 30, 2025 <i data-lucide="chevron-down" class="ms-1" style="width:14px; height:14px;"></i></div>
-                      <div class="d-flex gap-2">
-                           <div class="bg-dark text-white rounded-pill px-3 py-1 small fw-bold">Export <i data-lucide="download" class="ms-1" style="width:12px; height:12px;"></i></div>
-                           <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;"><i data-lucide="plus" style="width: 14px; height: 14px;"></i></div>
-                      </div>
-                 </div>
-
-                 <div class="row g-3 mb-4">
-                     <div class="col-6">
-                         <div class="border rounded-3 p-3">
-                              <div class="small text-muted mb-1">Project Retention</div>
-                              <div class="fs-4 fw-bold" style="letter-spacing: -1px;">84.9%</div>
-                              <div class="d-inline-flex gap-1 text-success align-items-center px-1 rounded" style="background: #ECFDF5; font-size: 0.7rem;"><i data-lucide="arrow-up" style="width:10px; height:10px;"></i> 12.75%</div>
-                         </div>
-                     </div>
-                     <div class="col-6">
-                         <div class="rounded-3 p-3 border-0" style="background: linear-gradient(135deg, #F3F4F6 0%, #FAFAFA 100%);">
-                              <div class="d-flex align-items-center gap-1 small text-muted mb-1">Needs Attention <i data-lucide="info" style="width: 12px; height: 12px;"></i></div>
-                              <div class="fs-4 fw-bold" style="letter-spacing: -1px;">12</div>
-                              <div class="small text-muted mt-1">Pending audits</div>
-                              <div class="mt-2 text-end">
-                                  <span class="bg-dark text-white rounded-pill px-2 py-1" style="font-size: 0.65rem;">See Details ></span>
-                              </div>
-                         </div>
-                     </div>
-                 </div>
-                 
-                 <!-- SVG Graph Line -->
-                 <div class="position-relative mt-4">
-                     <div class="small fw-bold text-muted mb-2">Average disbursement</div>
-                     <svg viewBox="0 0 400 60" class="w-100 overflow-visible">
-                         <path d="M0,40 C30,60 50,10 80,40 C110,70 140,20 170,40 C200,60 220,10 250,30 C280,50 300,10 330,30 C360,50 380,20 400,30" fill="none" stroke="#E2E8F0" stroke-width="3" stroke-linecap="round"/>
-                         <path d="M0,50 C40,70 60,30 90,50 C120,70 150,20 180,40 C210,60 240,10 280,40 L280,40" fill="none" stroke="#4F46E5" stroke-width="3" stroke-linecap="round"/>
-                         <circle cx="180" cy="40" r="5" fill="#4F46E5" stroke="white" stroke-width="2"/>
-                         <rect x="190" y="25" width="80" height="25" rx="4" fill="white" stroke="#E2E8F0" stroke-width="1"/>
-                         <text x="195" y="42" font-size="10" font-weight="bold" fill="#0F172A">M 21,845</text>
-                     </svg>
-                 </div>
             </div>
         </div>
     </div>
@@ -72,11 +22,13 @@
         <div class="my-auto mx-auto p-4 p-md-5 w-100" style="max-width: 480px;">
             <!-- Brand Logo -->
             <div class="text-center mb-5 pb-3">
-                <a href="/" class="text-decoration-none d-inline-flex align-items-center gap-2">
-                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="28" height="28" rx="8" fill="var(--brand-primary)" />
-                        <path d="M14 7L8 13L14 19L20 13L14 7Z" fill="white" opacity="0.9"/>
-                        <path d="M14 10L11 13L14 16L17 13L14 10Z" fill="white" opacity="0.5"/>
+                <a asp-controller="Home" asp-action="Index" class="d-flex align-items-center justify-content-center gap-3 mb-5 text-decoration-none">
+                    <svg width="42" height="28" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        <rect width="36" height="7.2" fill="#001489"/>
+                        <rect y="7.2" width="36" height="9.6" fill="#FFFFFF"/>
+                        <rect y="16.8" width="36" height="7.2" fill="#009A44"/>
+                        <path d="M18 8.5 C17.5 8.5, 17 9, 17 9.5 C17 10, 17.5 10.5, 18 10.5 C18.5 10.5, 19 10, 19 9.5 C19 9, 18.5 8.5, 18 8.5 Z" fill="#000000"/>
+                        <path d="M18 10.5 C16 13, 14 15, 13 16 L23 16 C22 15, 20 13, 18 10.5 Z" fill="#000000"/>
                     </svg>
                     <span class="fs-4 fw-bold" style="color: var(--text-heading); letter-spacing: -0.5px;">Mesa Mohloane</span>
                 </a>

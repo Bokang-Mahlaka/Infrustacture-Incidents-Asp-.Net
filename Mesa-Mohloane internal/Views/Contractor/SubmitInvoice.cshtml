@@ -10,7 +10,7 @@
             <p class="text-muted mb-5">Provide the final reconciliation of costs for this repair project. Admins will review the deviation from your original bid before approving payment.</p>
 
             <div class="clearbit-card shadow-sm">
-                <form asp-action="SubmitInvoice" method="post">
+                <form asp-action="SubmitInvoice" method="post" enctype="multipart/form-data">
                     <input type="hidden" asp-for="ProposalId" />
                     
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3 small fw-bold"></div>
@@ -25,6 +25,18 @@
                         <textarea asp-for="Description" class="form-control" placeholder="Description of final work" style="height: 120px;"></textarea>
                         <label asp-for="Description" class="text-muted small">Summary of Work Completed</label>
                         <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted mb-2">Evidence of Completion (Photos)</label>
+                        <div class="p-4 border border-dashed rounded-4 text-center bg-light-subtle mb-3 position-relative" style="cursor: pointer;" onclick="document.getElementById('photoInput').click()">
+                             <i data-lucide="camera" class="text-muted mb-2" style="width: 32px; height: 32px;"></i>
+                             <p class="small text-muted mb-0">Click to upload or drag and drop work photos</p>
+                             <input type="file" asp-for="Photos" id="photoInput" multiple class="d-none" accept="image/*" onchange="previewImages(this)" />
+                        </div>
+                        <div id="imagePreview" class="d-flex flex-wrap gap-2">
+                             <!-- Dynamic previews will appear here -->
+                        </div>
                     </div>
 
                     <div class="p-3 bg-light rounded-3 mb-4 border d-flex align-items-center">
@@ -49,4 +61,24 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function previewImages(input) {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+            if (input.files) {
+                Array.from(input.files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const div = document.createElement('div');
+                        div.className = 'rounded border p-1';
+                        div.style.width = '80px';
+                        div.style.height = '80px';
+                        div.innerHTML = `<img src="${e.target.result}" class="w-100 h-100 object-fit-cover rounded" />`;
+                        preview.appendChild(div);
+                    }
+                    reader.readAsDataURL(file);
+                });
+            }
+        }
+    </script>
 }

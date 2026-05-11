@@ -5,14 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Mesa Mohloane</title>
     
-    <!-- Load Inter Font -->
+    <!-- Load Inter and Merriweather Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Mesa_Mohloane_internal.styles.css" asp-append-version="true" />
+    
+    <!-- Toastr for notifications -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    
+    <!-- Leaflet.js for maps -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+    </script>
 </head>
 <body>
     <!-- Global Bouncing Preloader -->
@@ -33,18 +60,16 @@
             <div class="container">
                 <!-- Brand -->
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="28" height="28" rx="8" fill="url(#logoGrad)" />
-                        <path d="M14 7L8 13L14 19L20 13L14 7Z" fill="white" opacity="0.9"/>
-                        <path d="M14 10L11 13L14 16L17 13L14 10Z" fill="white" opacity="0.5"/>
-                        <defs>
-                            <linearGradient id="logoGrad" x1="0" y1="0" x2="28" y2="28">
-                                <stop stop-color="#4F46E5"/>
-                                <stop offset="1" stop-color="#7C3AED"/>
-                            </linearGradient>
-                        </defs>
+                    <svg width="36" height="24" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <rect width="36" height="7.2" fill="#001489"/>
+                        <rect y="7.2" width="36" height="9.6" fill="#FFFFFF"/>
+                        <rect y="16.8" width="36" height="7.2" fill="#009A44"/>
+                        <!-- Top loop/knob -->
+                        <path d="M18 8.5 C17.5 8.5, 17 9, 17 9.5 C17 10, 17.5 10.5, 18 10.5 C18.5 10.5, 19 10, 19 9.5 C19 9, 18.5 8.5, 18 8.5 Z" fill="#000000"/>
+                        <!-- Hat body -->
+                        <path d="M18 10.5 C16 13, 14 15, 13 16 L23 16 C22 15, 20 13, 18 10.5 Z" fill="#000000"/>
                     </svg>
-                    <span>Mesa</span>Mohloane
+                    Mesa Mohloane
                 </a>
 
                 <!-- Toggler -->
@@ -80,20 +105,19 @@
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Platform</a>
                                 <ul class="dropdown-menu border-0 shadow-lg mt-2">
-                                    <li><a class="dropdown-item" href="#infrastructure"><i data-lucide="layers" class="me-2" style="width:16px; height:16px;"></i>Infrastructure Registry</a></li>
-                                    <li><a class="dropdown-item" href="#verification"><i data-lucide="shield-check" class="me-2" style="width:16px; height:16px;"></i>Verification Engine</a></li>
-                                    <li><a class="dropdown-item" href="#reporting"><i data-lucide="file-text" class="me-2" style="width:16px; height:16px;"></i>Citizen Reporting</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="Platform" asp-route-id="registry"><i data-lucide="layers" class="me-2" style="width:16px; height:16px;"></i>Infrastructure Registry</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="Platform" asp-route-id="verification"><i data-lucide="shield-check" class="me-2" style="width:16px; height:16px;"></i>Verification Engine</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="Platform" asp-route-id="reporting"><i data-lucide="file-text" class="me-2" style="width:16px; height:16px;"></i>Citizen Reporting</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Solutions</a>
                                 <ul class="dropdown-menu border-0 shadow-lg mt-2">
-                                    <li><a class="dropdown-item" href="#government"><i data-lucide="landmark" class="me-2" style="width:16px; height:16px;"></i>For Government</a></li>
-                                    <li><a class="dropdown-item" href="#contractors"><i data-lucide="hard-hat" class="me-2" style="width:16px; height:16px;"></i>For Contractors</a></li>
-                                    <li><a class="dropdown-item" href="#citizens"><i data-lucide="users" class="me-2" style="width:16px; height:16px;"></i>For Citizens</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="Solutions" asp-route-id="government"><i data-lucide="landmark" class="me-2" style="width:16px; height:16px;"></i>For Government</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="Solutions" asp-route-id="contractors"><i data-lucide="hard-hat" class="me-2" style="width:16px; height:16px;"></i>For Contractors</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="Solutions" asp-route-id="citizens"><i data-lucide="users" class="me-2" style="width:16px; height:16px;"></i>For Citizens</a></li>
                                 </ul>
                             </li>
-                            <li class="nav-item"><a class="nav-link" href="#pricing">Pricing</a></li>
                         }
                     </ul>
 
@@ -102,14 +126,14 @@
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
                             <div class="d-flex align-items-center gap-3">
-                                <span class="fw-semibold text-muted d-none d-lg-inline" style="font-size: 0.85rem;">@User.Identity.Name</span>
-                                <a class="btn-brand-outline text-decoration-none" asp-controller="Auth" asp-action="Logout">Log out</a>
+                                <span class="fw-semibold text-white d-none d-lg-inline" style="font-size: 0.85rem; opacity: 0.9;">@User.Identity.Name</span>
+                                <a class="btn btn-outline-light btn-sm px-4 fw-bold rounded-2" style="font-size: 0.8rem; border-width: 1.5px;" asp-controller="Auth" asp-action="Logout">Log out</a>
                             </div>
                         }
                         else
                         {
-                            <a class="text-decoration-none nav-link" asp-controller="Auth" asp-action="Login">Log in</a>
-                            <a class="btn-brand text-decoration-none" asp-controller="Auth" asp-action="Register">Get started free</a>
+                            <a class="nav-link" asp-controller="Auth" asp-action="Login">Log in</a>
+                            <a class="btn-brand btn-nav text-decoration-none" asp-controller="Auth" asp-action="Register">Register Account</a>
                         }
                     </div>
                 </div>
@@ -131,15 +155,12 @@
                 <div class="row">
                     <div class="col-md-4 mb-4 mb-md-0">
                     <div class="d-flex align-items-center gap-2 mb-3">
-                        <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="28" height="28" rx="8" fill="url(#footerLogoGrad)" />
-                            <path d="M14 7L8 13L14 19L20 13L14 7Z" fill="white" opacity="0.9"/>
-                            <defs>
-                                <linearGradient id="footerLogoGrad" x1="0" y1="0" x2="28" y2="28">
-                                    <stop stop-color="#4F46E5"/>
-                                    <stop offset="1" stop-color="#7C3AED"/>
-                                </linearGradient>
-                            </defs>
+                        <svg width="36" height="24" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <rect width="36" height="7.2" fill="#001489"/>
+                            <rect y="7.2" width="36" height="9.6" fill="#FFFFFF"/>
+                            <rect y="16.8" width="36" height="7.2" fill="#009A44"/>
+                            <path d="M18 8.5 C17.5 8.5, 17 9, 17 9.5 C17 10, 17.5 10.5, 18 10.5 C18.5 10.5, 19 10, 19 9.5 C19 9, 18.5 8.5, 18 8.5 Z" fill="#000000"/>
+                            <path d="M18 10.5 C16 13, 14 15, 13 16 L23 16 C22 15, 20 13, 18 10.5 Z" fill="#000000"/>
                         </svg>
                         <span class="fw-bold" style="color: var(--text-heading);">Mesa Mohloane</span>
                     </div>
@@ -148,17 +169,17 @@
                 <div class="col-md-2 mb-3 mb-md-0">
                     <h6 class="small fw-bold text-uppercase mb-3" style="letter-spacing: 0.05em; color: var(--text-muted);">Platform</h6>
                     <ul class="list-unstyled mb-0">
-                        <li class="mb-2"><a class="text-muted small text-decoration-none" href="#">Registry</a></li>
-                        <li class="mb-2"><a class="text-muted small text-decoration-none" href="#">Verification</a></li>
-                        <li><a class="text-muted small text-decoration-none" href="#">Reporting</a></li>
+                        <li class="mb-2"><a class="text-muted small text-decoration-none" asp-controller="Home" asp-action="Platform" asp-route-id="registry">Registry</a></li>
+                        <li class="mb-2"><a class="text-muted small text-decoration-none" asp-controller="Home" asp-action="Platform" asp-route-id="verification">Verification</a></li>
+                        <li><a class="text-muted small text-decoration-none" asp-controller="Home" asp-action="Platform" asp-route-id="reporting">Reporting</a></li>
                     </ul>
                 </div>
                 <div class="col-md-2 mb-3 mb-md-0">
-                    <h6 class="small fw-bold text-uppercase mb-3" style="letter-spacing: 0.05em; color: var(--text-muted);">Company</h6>
+                    <h6 class="small fw-bold text-uppercase mb-3" style="letter-spacing: 0.05em; color: var(--text-muted);">Resources</h6>
                     <ul class="list-unstyled mb-0">
-                        <li class="mb-2"><a class="text-muted small text-decoration-none" href="#">About</a></li>
-                        <li class="mb-2"><a class="text-muted small text-decoration-none" href="#">Careers</a></li>
-                        <li><a class="text-muted small text-decoration-none" href="#">Contact</a></li>
+                        <li class="mb-2"><a class="text-muted small text-decoration-none" asp-controller="Home" asp-action="Solutions" asp-route-id="government">Government</a></li>
+                        <li class="mb-2"><a class="text-muted small text-decoration-none" asp-controller="Home" asp-action="Solutions" asp-route-id="contractors">Contractors</a></li>
+                        <li><a class="text-muted small text-decoration-none" asp-controller="Home" asp-action="Solutions" asp-route-id="citizens">Citizens</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4 text-md-end">
@@ -179,6 +200,9 @@
     <script>
       lucide.createIcons();
     </script>
+    
+    <!-- Form helpers for validation and UX -->
+    <script src="~/js/form-helpers.js"></script>
     
     @await RenderSectionAsync("Scripts", required: false)
 </body>

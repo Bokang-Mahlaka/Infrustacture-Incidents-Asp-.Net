@@ -34,6 +34,11 @@ namespace MesaMohloane.API.Models
         /// </summary>
         public int LateCompletions { get; set; } = 0;
 
+        /// <summary>
+        /// Approval status for registration — defaults to Approved for Citizens.
+        /// </summary>
+        public RegistrationStatus RegistrationStatus { get; set; } = RegistrationStatus.Approved;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties

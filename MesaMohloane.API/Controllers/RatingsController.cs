@@ -71,13 +71,14 @@ namespace MesaMohloane.API.Controllers
             _context.ContractorRatings.Add(rating);
             await _context.SaveChangesAsync();
 
-            // Update contractor's average rating
+            // Update contractor's average rating and increment completed jobs
             var contractor = incident.AssignedContractor!;
             var allRatings = await _context.ContractorRatings
                 .Where(r => r.ContractorId == contractor.Id)
                 .ToListAsync();
 
             contractor.AverageRating = allRatings.Average(r => r.Rating);
+            contractor.CompletedJobs += 1; // Increment completed jobs since a rating implies job completion
             await _context.SaveChangesAsync();
 
             // Audit log

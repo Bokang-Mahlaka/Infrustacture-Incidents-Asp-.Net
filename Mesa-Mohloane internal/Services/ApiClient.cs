@@ -9,6 +9,7 @@ namespace Mesa_Mohloane_internal.Services
         Task<TResponse?> PostFormAsync<TResponse>(string endpoint, MultipartFormDataContent data);
         Task<TResponse?> PutAsync<TRequest, TResponse>(string endpoint, TRequest data);
         Task<bool> DeleteAsync(string endpoint);
+        Task<byte[]?> GetByteArrayAsync(string endpoint);
         void SetBearerToken(string token);
     }
 
@@ -93,6 +94,24 @@ namespace Mesa_Mohloane_internal.Services
         {
             var response = await _httpClient.DeleteAsync(endpoint);
             return response.IsSuccessStatusCode;
+        }
+
+        public async Task<byte[]?> GetByteArrayAsync(string endpoint)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(endpoint);
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadAsByteArrayAsync();
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting byte array from {Endpoint}", endpoint);
+                return null;
+            }
         }
     }
 }

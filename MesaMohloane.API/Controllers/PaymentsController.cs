@@ -81,6 +81,42 @@ namespace MesaMohloane.API.Controllers
         }
 
         /// <summary>
+        /// Get all payments for the current contractor.
+        /// </summary>
+        [HttpGet("my-payments")]
+        [Authorize(Roles = "Contractor")]
+        public async Task<ActionResult<ApiResponse<List<ContractorPaymentDto>>>> GetMyPayments()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var payments = await _context.Payments
+                .Include(p => p.Invoice)
+                    .ThenInclude(i => i.Contractor)
+                .Include(p => p.Invoice)
+                    .ThenInclude(i => i.Proposal)
+                        .ThenInclude(pr => pr.Incident)
+                .Where(p => p.Invoice.ContractorId == userId)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
+            var dtos = payments.Select(p => new ContractorPaymentDto
+            {
+                Id = p.Id,
+                InvoiceId = p.InvoiceId,
+                IncidentId = p.Invoice?.Proposal?.IncidentId ?? 0,
+                IncidentTitle = p.Invoice?.Proposal?.Incident?.Title,
+                Amount = p.Amount,
+                Status = p.Status.ToString(),
+                CitizenAcknowledged = p.CitizenAcknowledged,
+                AdminApproved = p.AdminApproved,
+                DisbursedAt = p.DisbursedAt,
+                CreatedAt = p.CreatedAt
+            }).ToList();
+
+            return Ok(ApiResponse<List<ContractorPaymentDto>>.SuccessResponse(dtos));
+        }
+
+        /// <summary>
         /// Citizen acknowledges that the work is complete.
         /// </summary>
         [HttpPut("{id}/acknowledge")]

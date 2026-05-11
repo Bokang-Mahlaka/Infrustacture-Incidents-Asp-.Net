@@ -1,4 +1,4 @@
-@model List<Mesa_Mohloane_internal.Models.IncidentViewModel>
+@model Mesa_Mohloane_internal.Models.CitizenDashboardViewModel
 @{
     ViewData["Title"] = "Citizen Impact Center";
 }
@@ -27,22 +27,31 @@
         <div class="col-span-4">
             <div class="db-stat-card border-0 shadow-sm" style="background: #F8FAFC;">
                 <div class="stat-label">System-wide Reports</div>
-                <div class="stat-value">2,841</div>
-                <div class="stat-delta text-muted">Active community signals</div>
+                <div class="stat-value">@Model.Stats.TotalReports.ToString("N0")</div>
+                <div class="stat-delta text-muted">@Model.Stats.ResolvedReports.ToString("N0") resolved incidents</div>
             </div>
         </div>
         <div class="col-span-4">
             <div class="db-stat-card border-0 shadow-sm" style="background: #F8FAFC;">
                 <div class="stat-label">Resolution Rate</div>
-                <div class="stat-value">92<span style="font-size: 0.9rem;">%</span></div>
-                <div class="stat-delta text-success"><i data-lucide="trending-up"></i> +2.4% this month</div>
+                <div class="stat-value">@Model.Stats.ResolutionRate.ToString("0.#")<span style="font-size: 0.9rem;">%</span></div>
+                <div class="stat-delta text-success">Based on completed and closed incidents</div>
             </div>
         </div>
         <div class="col-span-4">
             <div class="db-stat-card border-0 shadow-sm" style="background: #F8FAFC;">
                 <div class="stat-label">Average Response</div>
-                <div class="stat-value">4.2<span style="font-size: 0.9rem;">d</span></div>
-                <div class="stat-delta text-muted">Time to contractor dispatch</div>
+                <div class="stat-value">
+                    @if (Model.Stats.AverageAssignmentDays.HasValue)
+                    {
+                        <text>@Model.Stats.AverageAssignmentDays.Value.ToString("0.0")<span style="font-size: 0.9rem;">d</span></text>
+                    }
+                    else
+                    {
+                        <text>N/A</text>
+                    }
+                </div>
+                <div class="stat-delta text-muted">Average time to contractor assignment</div>
             </div>
         </div>
     </div>
@@ -56,9 +65,9 @@
     </div>
 
     <div class="db-card-grid">
-        @if (Model != null && Model.Any())
+        @if (Model?.Incidents != null && Model.Incidents.Any())
         {
-            foreach (var item in Model)
+            foreach (var item in Model.Incidents)
             {
                 <div class="db-visual-card">
                     <div class="card-top">
@@ -118,8 +127,8 @@
                 <i data-lucide="users" style="width: 18px; height: 18px;"></i>
                 <span class="small fw-bold text-uppercase">Citizen Contribution</span>
             </div>
-            <h4>Community Watch is Active</h4>
-            <p>Join over 2,400 Basotho in securing our kingdom's future. Every report contributes to national development.</p>
+            <h4 class="text-white">Community Watch is Active</h4>
+            <p class="text-white">Join over 2,400 Basotho in securing our kingdom's future. Every report contributes to national development.</p>
         </div>
         <div class="flex-shrink-0">
             <a href="#" class="btn btn-light px-4 py-3 fw-bold text-brand shadow-sm">

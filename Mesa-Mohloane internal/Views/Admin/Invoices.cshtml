@@ -82,6 +82,14 @@
                             </td>
                             <td class="pe-4 text-end">
                                 <div class="d-flex justify-content-end align-items-center" style="gap: 12px;">
+                                    @if (item.ProofOfWorkImagesList.Any())
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-brand px-3 fw-bold" 
+                                                data-bs-toggle="modal" data-bs-target="#proofModal@item.Id">
+                                            <i data-lucide="image" class="me-1" style="width: 14px; height: 14px;"></i> Proof
+                                        </button>
+                                    }
+
                                     @if(string.Equals(item.Status, "Submitted", StringComparison.OrdinalIgnoreCase) || 
                                         string.Equals(item.Status, "Pending", StringComparison.OrdinalIgnoreCase) || 
                                         string.Equals(item.Status, "Flagged", StringComparison.OrdinalIgnoreCase))
@@ -108,7 +116,7 @@
                                         {
                                             <form asp-action="DisbursePayment" method="post" class="m-0">
                                                 <input type="hidden" name="paymentId" value="@item.PaymentId" />
-                                                <button type="submit" class="btn btn-sm btn-brand px-3 @(item.CitizenAcknowledged ? "" : "disabled")">
+                                                <button type="submit" class="btn btn-sm btn-success px-3" @(item.CitizenAcknowledged ? "" : "disabled")>
                                                     Disburse <i data-lucide="send" class="ms-1" style="width: 12px; height: 12px;"></i>
                                                 </button>
                                             </form>
@@ -128,8 +136,30 @@
                                         <span class="text-muted small">Processed</span>
                                     }
                                 </div>
+                                <div class="modal fade" id="proofModal@item.Id" tabindex="-1" aria-hidden="true">
+                                     <div class="modal-dialog modal-lg">
+                                         <div class="modal-content">
+                                             <div class="modal-header border-0">
+                                                 <h5 class="modal-title fw-bold">Evidence of Completion — #@item.Id</h5>
+                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                             </div>
+                                             <div class="modal-body pt-0">
+                                                 <div class="row g-3">
+                                                     @foreach (var imgUrl in item.ProofOfWorkImagesList)
+                                                     {
+                                                         <div class="col-md-6">
+                                                             <div class="rounded-4 overflow-hidden border shadow-sm bg-light" style="aspect-ratio: 16/9;">
+                                                                 <img src="@imgUrl" class="w-100 h-100 object-fit-cover" referrerpolicy="no-referrer" alt="Proof of work" />
+                                                             </div>
+                                                         </div>
+                                                     }
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 </div>
 
-                                <!-- Reject Modal -->
+                                 <!-- Reject Modal -->
                                 <div class="modal fade" id="rejectModal@item.Id" tabindex="-1" aria-hidden="true">
                                     <div class="modal-dialog">
                                         <div class="modal-content">

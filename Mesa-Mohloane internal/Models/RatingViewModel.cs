@@ -27,5 +27,11 @@ namespace Mesa_Mohloane_internal.Models
 
         [Range(typeof(bool), "true", "true", ErrorMessage = "You must certify the work before sign-off")]
         public bool Certified { get; set; }
+
+        public string? ProofOfWorkImageUrls { get; set; }
+        public List<string> ProofOfWorkImagesList => 
+            string.IsNullOrEmpty(ProofOfWorkImageUrls) 
+                ? new List<string>() 
+                : ProofOfWorkImageUrls.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
     }
 }

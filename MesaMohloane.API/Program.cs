@@ -76,6 +76,7 @@ builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IInvoiceValidationService, InvoiceValidationService>();
 builder.Services.AddScoped<ITenderEvaluationService, TenderEvaluationService>();
+builder.Services.AddScoped<IExportService, ExportService>();
 
 // ========================
 // CONTROLLERS + SWAGGER

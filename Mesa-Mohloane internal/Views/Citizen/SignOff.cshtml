@@ -31,6 +31,24 @@
                         </div>
                     }
 
+                    <!-- 0. Proof of Work Gallery -->
+                    @if (Model.ProofOfWorkImagesList.Any())
+                    {
+                        <div class="mb-5">
+                            <label class="fw-bold text-heading d-block mb-3 small text-muted text-uppercase ls-1">Evidence of Completion</label>
+                            <div class="row g-3">
+                                @foreach (var imgUrl in Model.ProofOfWorkImagesList)
+                                {
+                                    <div class="col-md-4">
+                                        <div class="rounded-4 overflow-hidden border shadow-sm bg-light" style="aspect-ratio: 16/9;">
+                                            <img src="@imgUrl" class="w-100 h-100 object-fit-cover" referrerpolicy="no-referrer" alt="Proof of work" />
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
                     <!-- 1. Rating Section -->
                     <div class="mb-5 text-center">
                         <label class="fw-bold text-heading d-block mb-3">Rate the Workmanship</label>

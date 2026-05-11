@@ -9,10 +9,12 @@ namespace Mesa_Mohloane_internal.Controllers
     public class ContractorController : Controller
     {
         private readonly IApiClient _apiClient;
+        private readonly IWebHostEnvironment _env;
 
-        public ContractorController(IApiClient apiClient)
+        public ContractorController(IApiClient apiClient, IWebHostEnvironment env)
         {
             _apiClient = apiClient;
+            _env = env;
         }
 
         public async Task<IActionResult> Dashboard()
@@ -108,10 +110,37 @@ namespace Mesa_Mohloane_internal.Controllers
         {
             if (!ModelState.IsValid) return View(model);
 
+            if (model.Photos != null && model.Photos.Any())
+            {
+                var uploadedUrls = new List<string>();
+                var uploadPath = Path.Combine(_env.WebRootPath, "uploads", "invoices");
+
+                if (!Directory.Exists(uploadPath))
+                {
+                    Directory.CreateDirectory(uploadPath);
+                }
+
+                foreach (var photo in model.Photos)
+                {
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(photo.FileName);
+                    var filePath = Path.Combine(uploadPath, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await photo.CopyToAsync(stream);
+                    }
+
+                    uploadedUrls.Add("/uploads/invoices/" + fileName);
+                }
+
+                model.ProofOfWorkImageUrls = string.Join(";", uploadedUrls);
+            }
+
             // Structure matches backend CreateInvoiceDto
             var payload = new 
             {
                 TotalAmount = model.TotalAmount,
+                ProofOfWorkImageUrls = model.ProofOfWorkImageUrls,
                 LineItems = new List<object>
                 {
                     new 
@@ -270,6 +299,12 @@ namespace Mesa_Mohloane_internal.Controllers
 
             ModelState.AddModelError(string.Empty, response?.Message ?? "Failed to update proposal.");
             return View(model);
+        }
+
+        public async Task<IActionResult> Payments()
+        {
+            // View will load payments via JavaScript API call
+            return View();
         }
     }
 }

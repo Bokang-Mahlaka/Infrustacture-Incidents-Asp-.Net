@@ -130,3 +130,37 @@
         </div>
     }
 </div>
+
+<script>
+async function markWorkComplete(incidentId) {
+    if (!confirm('Mark this work as complete? The citizen will be notified to acknowledge the work.')) {
+        return;
+    }
+
+    try {
+        const token = getToken();
+        const response = await fetch(`/api/Incidents/${incidentId}/mark-complete`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            toastr.success('Work marked as complete. Citizen has been notified.');
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            const error = await response.json();
+            toastr.error(error.message || 'Failed to mark work complete');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        toastr.error('Network error. Please try again.');
+    }
+}
+
+function getToken() {
+    return localStorage.getItem('authToken') || sessionStorage.getItem('authToken') || '';
+}
+</script>

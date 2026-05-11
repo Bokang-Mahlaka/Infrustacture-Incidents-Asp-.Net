@@ -1,0 +1,74 @@
+@{
+    var subTopic = ViewData["SubTopic"] as string ?? "government";
+    ViewData["Title"] = subTopic.ToUpper() + " - Mesa Mohloane Solutions";
+    
+    var title = "For Government";
+    var description = "Centralized oversight for ministries and agencies to monitor national assets and budgets.";
+    var icon = "landmark";
+    
+    if(subTopic == "contractors") {
+        title = "For Contractors";
+        description = "A fair and transparent bidding and project management portal for verified infrastructure partners.";
+        icon = "hard-hat";
+    } else if(subTopic == "citizens") {
+        title = "For Citizens";
+        description = "Empowering the people of Lesotho to report infrastructure needs and monitor local developments.";
+        icon = "users";
+    }
+}
+
+<div class="hero-gradient-overlay"></div>
+<div class="dot-pattern"></div>
+
+<section class="section-padding position-relative">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none text-muted">Home</a></li>
+                <li class="breadcrumb-item"><span class="text-muted">Solutions</span></li>
+                <li class="breadcrumb-item active" aria-current="page">@title</li>
+            </ol>
+        </nav>
+
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-4" style="background: rgba(0, 154, 68, 0.05); border: 1px solid rgba(0, 154, 68, 0.1);">
+                    <span style="font-size: 0.7rem; font-weight: 800; color: var(--brand-secondary); letter-spacing: 0.04em; text-transform: uppercase;">Infrastructure Solution</span>
+                </div>
+                <h1 class="display-4 fw-bold mb-4" style="color: var(--text-heading);">
+                    <i data-lucide="@icon" class="me-3" style="width: 48px; height: 48px; color: var(--brand-secondary);"></i><br/>
+                    @title
+                </h1>
+                <p class="lead text-muted mb-5" style="line-height: 1.8;">
+                    @description Our solution is tailored to the unique needs of @title. By bridging the gap between stakeholders, we ensure that every public works project delivers maximum value to the Kingdom.
+                </p>
+                
+                <div class="card border-0 shadow-sm p-4 mb-5" style="background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-radius: var(--radius-lg);">
+                    <h5 class="fw-bold mb-3">Impact & Benefits</h5>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="p-3 rounded-3 bg-light border border-white">
+                                <div class="fw-bold mb-1">Efficiency</div>
+                                <div class="small text-muted">Streamlined workflows and reporting.</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded-3 bg-light border border-white">
+                                <div class="fw-bold mb-1">Trust</div>
+                                <div class="small text-muted">Built-in accountability for all.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <a asp-controller="Auth" asp-action="Register" class="btn-brand btn-brand-lg text-decoration-none">Get Started Today</a>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="clearbit-card border-0 p-0 overflow-hidden shadow-xl" style="border-radius: var(--radius-xl);">
+                    <img src="~/images/blueprint.png" class="img-fluid w-100" alt="@title" style="object-fit: cover; height: 500px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -23,6 +23,20 @@ namespace Mesa_Mohloane_internal.Controllers
             return View();
         }
 
+        [Route("Home/Platform/{id}")]
+        public IActionResult Platform(string id)
+        {
+            ViewData["SubTopic"] = id;
+            return View();
+        }
+
+        [Route("Home/Solutions/{id}")]
+        public IActionResult Solutions(string id)
+        {
+            ViewData["SubTopic"] = id;
+            return View();
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

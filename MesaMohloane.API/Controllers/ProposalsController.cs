@@ -1,3 +1,4 @@
+using MesaMohloane.API.Attributes;
 using MesaMohloane.API.Data;
 using MesaMohloane.API.Models;
 using MesaMohloane.API.Models.DTOs;
@@ -157,6 +158,7 @@ namespace MesaMohloane.API.Controllers
         /// </summary>
         [HttpPut("{id}")]
         [Authorize(Roles = "Contractor")]
+        [AuthorizeResourceOwner("id")]
         public async Task<ActionResult<ApiResponse<ProposalDto>>> Update(int id, [FromBody] CreateProposalDto dto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -210,6 +212,37 @@ namespace MesaMohloane.API.Controllers
                 ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
  
             return Ok(ApiResponse<ProposalDto>.SuccessResponse(MapToDto(proposal), "Proposal updated successfully."));
+        }
+
+        /// <summary>
+        /// Contractor deletes a proposal (only if in Submitted status).
+        /// </summary>
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Contractor")]
+        [AuthorizeResourceOwner("id")]
+        public async Task<ActionResult<ApiResponse<string>>> Delete(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            var proposal = await _context.Proposals
+                .Include(p => p.LineItems)
+                .FirstOrDefaultAsync(p => p.Id == id && p.ContractorId == userId);
+
+            if (proposal == null)
+                return NotFound(ApiResponse<string>.ErrorResponse("Proposal not found."));
+
+            if (proposal.Status != ProposalStatus.Submitted)
+                return BadRequest(ApiResponse<string>.ErrorResponse("Only proposals in Submitted status can be deleted."));
+
+            _context.ProposalLineItems.RemoveRange(proposal.LineItems);
+            _context.Proposals.Remove(proposal);
+            await _context.SaveChangesAsync();
+
+            await _auditService.LogAsync(userId, "ProposalDeleted", "Proposal", id,
+                newValue: "Proposal deleted by contractor",
+                ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
+
+            return Ok(ApiResponse<string>.SuccessResponse("Proposal deleted successfully."));
         }
 
         /// <summary>

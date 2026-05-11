@@ -17,13 +17,17 @@ namespace Mesa_Mohloane_internal.Controllers
 
         public async Task<IActionResult> Dashboard(string? status = "All")
         {
-            // Fetch all incidents
-            var response = await _apiClient.GetAsync<ApiResponse<List<IncidentViewModel>>>("/api/Incidents");
-            
+            var incidentsTask = _apiClient.GetAsync<ApiResponse<List<IncidentViewModel>>>("/api/Incidents");
+            var statsTask = _apiClient.GetAsync<ApiResponse<AdminDashboardStatsViewModel>>("/api/Incidents/admin-summary");
+            var pendingContractorsTask = _apiClient.GetAsync<ApiResponse<List<ContractorSummaryViewModel>>>("/api/Contractors/pending");
+
+            await Task.WhenAll(incidentsTask, statsTask, pendingContractorsTask);
+
             var incidents = new List<IncidentViewModel>();
-            if (response != null && response.Success && response.Data != null)
+            var incidentsResponse = await incidentsTask;
+            if (incidentsResponse != null && incidentsResponse.Success && incidentsResponse.Data != null)
             {
-                incidents = response.Data.ToList();
+                incidents = incidentsResponse.Data.ToList();
 
                 // Apply filtering
                 if (!string.IsNullOrEmpty(status) && status != "All")
@@ -44,8 +48,27 @@ namespace Mesa_Mohloane_internal.Controllers
                 }
             }
 
+            var stats = new AdminDashboardStatsViewModel();
+            var statsResponse = await statsTask;
+            if (statsResponse != null && statsResponse.Success && statsResponse.Data != null)
+            {
+                stats = statsResponse.Data;
+            }
+
+            var pendingContractors = new List<ContractorSummaryViewModel>();
+            var pendingResponse = await pendingContractorsTask;
+            if (pendingResponse != null && pendingResponse.Success && pendingResponse.Data != null)
+            {
+                pendingContractors = pendingResponse.Data;
+            }
+
             ViewBag.CurrentStatus = status;
-            return View(incidents);
+            return View(new AdminDashboardViewModel
+            {
+                Incidents = incidents,
+                Stats = stats,
+                PendingContractors = pendingContractors
+            });
         }
 
         public async Task<IActionResult> Details(int id)
@@ -200,6 +223,42 @@ namespace Mesa_Mohloane_internal.Controllers
             }
 
             return RedirectToAction("Invoices");
+        }
+
+        public async Task<IActionResult> Contractors()
+        {
+            // View will load contractors via JavaScript API call
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveContractor(string id)
+        {
+            var response = await _apiClient.PostAsync<object, ApiResponse<bool>>($"/api/Contractors/{id}/approve", null);
+            if (response != null && response.Success)
+            {
+                TempData["SuccessMessage"] = "Contractor has been approved and granted access to the platform.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = response?.Message ?? "Failed to approve contractor.";
+            }
+            return RedirectToAction("Dashboard");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectContractor(string id)
+        {
+            var response = await _apiClient.PostAsync<object, ApiResponse<bool>>($"/api/Contractors/{id}/reject", null);
+            if (response != null && response.Success)
+            {
+                TempData["SuccessMessage"] = "Contractor registration rejected.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = response?.Message ?? "Failed to reject contractor.";
+            }
+            return RedirectToAction("Dashboard");
         }
     }
 }

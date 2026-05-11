@@ -5,7 +5,7 @@ using Mesa_Mohloane_internal.Services;
 
 namespace Mesa_Mohloane_internal.Controllers
 {
-    [Authorize(Roles = "Auditor")]
+    [Authorize(Roles = "Auditor,Admin")]
     public class AuditorController : Controller
     {
         private readonly IApiClient _apiClient;
@@ -44,6 +44,23 @@ namespace Mesa_Mohloane_internal.Controllers
             }
 
             return View(flagged);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportAudit(string format = "csv", DateTime? startDate = null, DateTime? endDate = null, string? entity = null)
+        {
+            var url = $"/api/Audit/export?format={format}";
+            if (startDate.HasValue) url += $"&startDate={startDate.Value:yyyy-MM-dd}";
+            if (endDate.HasValue) url += $"&endDate={endDate.Value:yyyy-MM-dd}";
+            if (!string.IsNullOrEmpty(entity)) url += $"&entity={entity}";
+
+            var bytes = await _apiClient.GetByteArrayAsync(url);
+            if (bytes == null) return BadRequest("Failed to export logs.");
+
+            var contentType = format.ToLower() == "csv" ? "text/csv" : "text/html";
+            var fileName = $"audit-logs_{DateTime.UtcNow:yyyyMMdd}.{format}";
+            
+            return File(bytes, contentType, fileName);
         }
     }
 }

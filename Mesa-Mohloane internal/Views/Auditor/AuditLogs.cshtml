@@ -10,8 +10,11 @@
             <p class="text-muted">Immutable record of all administrative and financial actions.</p>
         </div>
         <div>
-            <button class="btn btn-outline-secondary btn-sm">
+            <button class="btn btn-outline-secondary btn-sm" onclick="exportLogs('csv')">
                 <i data-lucide="download" class="me-2" style="width: 16px; height: 16px;"></i> Export CSV
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" onclick="exportLogs('pdf')">
+                <i data-lucide="file-pdf" class="me-2" style="width: 16px; height: 16px;"></i> Export PDF
             </button>
         </div>
     </div>
@@ -75,3 +78,18 @@
         </div>
     }
 </div>
+
+<script>
+function exportLogs(format) {
+    const startDate = document.getElementById('filterStartDate')?.value;
+    const endDate = document.getElementById('filterEndDate')?.value;
+    const entity = document.getElementById('filterEntity')?.value;
+
+    let url = `/Auditor/ExportAudit?format=${format}`;
+    if (startDate) url += `&startDate=${startDate}`;
+    if (endDate) url += `&endDate=${endDate}`;
+    if (entity) url += `&entity=${entity}`;
+
+    window.location.href = url;
+}
+</script>

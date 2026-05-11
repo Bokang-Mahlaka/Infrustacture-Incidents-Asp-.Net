@@ -78,16 +78,25 @@
             foreach (var item in Model)
             {
                 <div class="db-visual-card">
-                    <div class="card-top">
-                        <span class="card-category">@item.Category</span>
-                        @if (ViewBag.SubmittedProposals != null && ((Dictionary<int, int>)ViewBag.SubmittedProposals).ContainsKey(item.Id))
+                    <div class="card-top" style="position: relative; min-height: 160px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: flex-start; border-radius: 12px 12px 0 0; @(!string.IsNullOrEmpty(item.PhotoUrl) ? $"background-image: url('{item.PhotoUrl}'); background-size: cover; background-position: center;" : "background: linear-gradient(135deg, var(--brand-primary) 0%, #312E81 100%);")">
+                        
+                        <!-- Dark overlay if there is a photo to ensure text is readable -->
+                        @if (!string.IsNullOrEmpty(item.PhotoUrl))
                         {
-                            <span class="db-badge db-badge-success">Applied</span>
+                            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%); border-radius: 12px 12px 0 0;"></div>
                         }
-                        else
-                        {
-                            <span class="db-badge db-badge-info">Open Bid</span>
-                        }
+                        
+                        <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; width: 100%;">
+                            <span class="card-category" style="@(!string.IsNullOrEmpty(item.PhotoUrl) ? "background: rgba(255,255,255,0.9);" : "")">@item.Category</span>
+                            @if (ViewBag.SubmittedProposals != null && ((Dictionary<int, int>)ViewBag.SubmittedProposals).ContainsKey(item.Id))
+                            {
+                                <span class="db-badge db-badge-success shadow-sm">Applied</span>
+                            }
+                            else
+                            {
+                                <span class="db-badge db-badge-info shadow-sm">Open Bid</span>
+                            }
+                        </div>
                     </div>
                     <div class="card-content">
                         <div class="card-title">@item.Title</div>
@@ -164,11 +173,11 @@
             </div>
         </div>
         <div class="col-span-4">
-             <div class="db-card border-0 rounded-4 p-4 d-flex flex-column h-100" style="background: linear-gradient(135deg, var(--brand-secondary) 0%, #6D28D9 100%); color: white;">
+             <div class="db-card border-0 rounded-4 p-4 d-flex flex-column h-100" style="background: var(--brand-primary); color: white;">
                 <h6 class="fw-bold mb-3">Tender Analytics</h6>
-                <p class="small opacity-75 mb-4">Your bid success rate has increased by 12% following the latest algorithm update.</p>
+                <p class="small opacity-75 mb-4 text-white">Your bid success rate has increased by 12% following the latest algorithm update.</p>
                 <div class="mt-auto">
-                    <a href="#" class="btn btn-sm btn-light w-100 fw-bold py-2" style="color: var(--brand-secondary);">Optimization Tips</a>
+                    <a href="#" class="btn btn-sm btn-light w-100 fw-bold py-2" style="color: var(--brand-primary);">Optimization Tips</a>
                 </div>
             </div>
         </div>

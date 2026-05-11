@@ -140,6 +140,22 @@ namespace MesaMohloane.API.Models.DTOs
         public bool IsAcknowledged { get; set; }
     }
 
+    public class CitizenDashboardStatsDto
+    {
+        public int TotalReports { get; set; }
+        public int ResolvedReports { get; set; }
+        public double ResolutionRate { get; set; }
+        public double? AverageAssignmentDays { get; set; }
+    }
+
+    public class AdminDashboardStatsDto
+    {
+        public int ActiveInfrastructureSignals { get; set; }
+        public int ActiveBids { get; set; }
+        public int PendingApprovals { get; set; }
+        public double AverageProposalCost { get; set; }
+    }
+
     // ========================
     // PROPOSAL DTOs
     // ========================
@@ -215,6 +231,8 @@ namespace MesaMohloane.API.Models.DTOs
         [Required]
         [MinLength(1)]
         public List<CreateLineItemDto> LineItems { get; set; } = new();
+
+        public string? ProofOfWorkImageUrls { get; set; }
     }
 
     public class InvoiceDto
@@ -231,6 +249,12 @@ namespace MesaMohloane.API.Models.DTOs
         public DateTime SubmittedAt { get; set; }
         public DateTime? ApprovedAt { get; set; }
         public decimal OriginalProposalCost { get; set; }
+        public string? ProofOfWorkImageUrls { get; set; }
+        public List<string> ProofOfWorkImagesList => 
+            string.IsNullOrEmpty(ProofOfWorkImageUrls) 
+                ? new List<string>() 
+                : ProofOfWorkImageUrls.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
+
         public List<LineItemDto> LineItems { get; set; } = new();
     }
 
@@ -328,6 +352,79 @@ namespace MesaMohloane.API.Models.DTOs
         public string? NewValue { get; set; }
         public DateTime Timestamp { get; set; }
         public string? IpAddress { get; set; }
+    }
+
+    // ========================
+    // ========================
+    // CONTRACTOR DTOs
+    // ========================
+
+    public class ContractorSummaryDto
+    {
+        public string Id { get; set; }
+        public string FullName { get; set; }
+        public string? CompanyName { get; set; }
+        public string? Email { get; set; }
+        public double AverageRating { get; set; }
+        public int CompletedJobs { get; set; }
+        public int ProposalsSubmitted { get; set; }
+        public double AverageProposalCost { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class ContractorDetailDto
+    {
+        public string Id { get; set; }
+        public string FullName { get; set; }
+        public string? CompanyName { get; set; }
+        public string? Email { get; set; }
+        public string? PhoneNumber { get; set; }
+        public double AverageRating { get; set; }
+        public int CompletedJobs { get; set; }
+        public int LateCompletions { get; set; }
+        public int RatingsCount { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public List<ContractorProposalDto> Proposals { get; set; } = new();
+        public List<ContractorInvoiceDto> Invoices { get; set; } = new();
+    }
+
+    public class ContractorProposalDto
+    {
+        public int Id { get; set; }
+        public int IncidentId { get; set; }
+        public string? IncidentTitle { get; set; }
+        public string? IncidentCategory { get; set; }
+        public decimal TotalCost { get; set; }
+        public int EstimatedDays { get; set; }
+        public string Status { get; set; }
+        public decimal Score { get; set; }
+        public DateTime SubmittedAt { get; set; }
+    }
+
+    public class ContractorInvoiceDto
+    {
+        public int Id { get; set; }
+        public int ProposalId { get; set; }
+        public string? IncidentTitle { get; set; }
+        public decimal TotalAmount { get; set; }
+        public string Status { get; set; }
+        public bool DeviationFlagged { get; set; }
+        public decimal DeviationPercentage { get; set; }
+        public DateTime? SubmittedAt { get; set; }
+    }
+
+    public class ContractorPaymentDto
+    {
+        public int Id { get; set; }
+        public int InvoiceId { get; set; }
+        public int IncidentId { get; set; }
+        public string? IncidentTitle { get; set; }
+        public decimal Amount { get; set; }
+        public string Status { get; set; }
+        public bool CitizenAcknowledged { get; set; }
+        public bool AdminApproved { get; set; }
+        public DateTime? DisbursedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 
     // ========================

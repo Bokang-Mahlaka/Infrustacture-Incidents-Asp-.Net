@@ -1,5 +1,7 @@
 using MesaMohloane.API.Data;
+using MesaMohloane.API.Models;
 using MesaMohloane.API.Models.DTOs;
+using MesaMohloane.API.Services.Auditing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,10 +14,12 @@ namespace MesaMohloane.API.Controllers
     public class AuditController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IExportService _exportService;
 
-        public AuditController(ApplicationDbContext context)
+        public AuditController(ApplicationDbContext context, IExportService exportService)
         {
             _context = context;
+            _exportService = exportService;
         }
 
         /// <summary>
@@ -99,6 +103,51 @@ namespace MesaMohloane.API.Controllers
             }).ToList();
 
             return Ok(ApiResponse<List<AuditLogDto>>.SuccessResponse(dtos));
+        }
+
+        /// <summary>
+        /// Export audit logs in CSV or HTML format.
+        /// </summary>
+        [HttpGet("export")]
+        [Authorize(Roles = "Admin,Auditor")]
+        public async Task<IActionResult> Export(
+            [FromQuery] string format = "csv",
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] string? entity = null)
+        {
+            var query = _context.AuditLogs.AsQueryable();
+
+            // Apply filters
+            if (startDate.HasValue)
+                query = query.Where(a => a.Timestamp >= startDate.Value);
+
+            if (endDate.HasValue)
+                query = query.Where(a => a.Timestamp <= endDate.Value);
+
+            if (!string.IsNullOrEmpty(entity))
+                query = query.Where(a => a.Entity == entity);
+
+            var logs = await query.OrderByDescending(a => a.Timestamp).ToListAsync();
+
+            if (!logs.Any())
+                return BadRequest(new { message = "No audit logs found matching the criteria." });
+
+            var stream = new MemoryStream();
+            var fileName = $"audit-logs_{DateTime.UtcNow:yyyyMMdd_HHmmss}";
+
+            if (format.ToLower() == "pdf")
+            {
+                await _exportService.ExportAuditLogsToPdfAsync(logs, stream);
+                stream.Position = 0;
+                return File(stream, "text/html", $"{fileName}.html");
+            }
+            else // CSV is default
+            {
+                await _exportService.ExportAuditLogsToCsvAsync(logs, stream);
+                stream.Position = 0;
+                return File(stream, "text/csv", $"{fileName}.csv");
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-@model List<Mesa_Mohloane_internal.Models.IncidentViewModel>
+@model Mesa_Mohloane_internal.Models.AdminDashboardViewModel
 @{
     ViewData["Title"] = "Infrastructure Command Center";
 }
@@ -13,20 +13,71 @@
                     <span class="small fw-bold text-uppercase">Institutional Oversight Active</span>
                 </div>
                 <h3 class="fw-extrabold mb-1">National Command Center</h3>
-                <p class="text-white-50 m-0">Managing @(Model?.Count ?? 0) active infrastructure signals across Lesotho's 10 districts.</p>
+                <p class="text-white-50 m-0">Managing @(Model?.Stats?.ActiveInfrastructureSignals ?? 0) active infrastructure signals across Lesotho's 10 districts.</p>
             </div>
             <div class="d-flex gap-4">
                 <div class="text-center">
-                    <div class="h4 fw-bold mb-0">99.9%</div>
-                    <div class="small opacity-50">System Uptime</div>
+                    <div class="h4 fw-bold mb-0">@(Model?.Stats?.PendingApprovals ?? 0)</div>
+                    <div class="small opacity-50">Pending Approvals</div>
                 </div>
                 <div class="text-center border-start ps-4 border-secondary">
-                    <div class="h4 fw-bold mb-0">@(Model?.Sum(i => i.ProposalCount) ?? 0)</div>
+                    <div class="h4 fw-bold mb-0">@(Model?.Stats?.ActiveBids ?? 0)</div>
                     <div class="small opacity-50">Active Bids</div>
                 </div>
             </div>
         </div>
     </div>
+    
+    @if (Model?.PendingContractors != null && Model.PendingContractors.Any())
+    {
+        <div class="mb-5">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <i data-lucide="user-plus" class="text-brand" style="width: 20px; height: 20px;"></i>
+                <h5 class="fw-bold m-0">Contractor Registration Requests</h5>
+                <span class="badge bg-danger rounded-pill ms-2">@Model.PendingContractors.Count Action Required</span>
+            </div>
+            
+            <div class="row g-4">
+                @foreach (var contractor in Model.PendingContractors)
+                {
+                    <div class="col-md-6 col-xl-4">
+                        <div class="db-card border-0 shadow-sm h-100">
+                            <div class="db-card-body p-4">
+                                <div class="d-flex align-items-start justify-content-between mb-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                            <i data-lucide="building" class="text-brand" style="width: 24px; height: 24px;"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-heading">@contractor.CompanyName</div>
+                                            <div class="small text-muted">@contractor.FullName</div>
+                                        </div>
+                                    </div>
+                                    <div class="small text-muted fw-medium">@contractor.CreatedAt.ToString("MMM dd")</div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <div class="d-flex align-items-center gap-2 small text-muted mb-1">
+                                        <i data-lucide="mail" style="width: 14px; height: 14px;"></i>
+                                        @contractor.Email
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex gap-2">
+                                    <form asp-action="ApproveContractor" asp-route-id="@contractor.Id" method="post" class="flex-fill">
+                                        <button type="submit" class="btn btn-sm btn-brand w-100 fw-bold py-2">Approve</button>
+                                    </form>
+                                    <form asp-action="RejectContractor" asp-route-id="@contractor.Id" method="post" class="flex-fill">
+                                        <button type="submit" class="btn btn-sm btn-light border w-100 fw-bold py-2">Reject</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
 
     <!-- Management Filtering Header -->
     <div class="db-greeting d-flex justify-content-between align-items-center mb-4">
@@ -51,7 +102,7 @@
     <!-- Main Content: Full Width Table -->
     <div class="db-card border-0 shadow-sm">
         <div class="db-card-body p-0">
-            @if (Model != null && Model.Any())
+            @if (Model?.Incidents != null && Model.Incidents.Any())
             {
                 <div class="table-responsive">
                     <table class="table table-hover mb-0 align-middle">
@@ -66,7 +117,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in Model)
+                            @foreach (var item in Model.Incidents)
                             {
                                 <tr>
                                     <td class="ps-4 fw-bold text-muted">#@(item.Id.ToString("D4"))</td>
@@ -100,17 +151,19 @@
                                         }
                                     </td>
                                     <td class="pe-4 text-end">
-                                        <div class="dropdown">
+                                        <div class="d-flex align-items-center justify-content-end gap-1">
                                             <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-brand px-4 fw-bold">Manage</a>
-                                            <button class="btn btn-sm btn-light border-0 ms-1" type="button" data-bs-toggle="dropdown">
-                                                <i data-lucide="more-vertical" style="width: 14px; height: 14px;"></i>
-                                            </button>
-                                            <ul class="dropdown-menu border-0 shadow-lg small fw-bold">
-                                                <li><a class="dropdown-item" href="#">View Audit logs</a></li>
-                                                <li><a class="dropdown-item" href="#">Manually Re-rank</a></li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li><a class="dropdown-item text-danger" href="#">Declare Emergency</a></li>
-                                            </ul>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown">
+                                                    <i data-lucide="more-vertical" style="width: 14px; height: 14px;"></i>
+                                                </button>
+                                                <ul class="dropdown-menu border-0 shadow-lg small fw-bold dropdown-menu-end">
+                                                    <li><a class="dropdown-item" href="#">View Audit logs</a></li>
+                                                    <li><a class="dropdown-item" href="#">Manually Re-rank</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item text-danger" href="#">Declare Emergency</a></li>
+                                                </ul>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>

@@ -34,6 +34,9 @@ namespace MesaMohloane.API.Models
         [MaxLength(1000)]
         public string? RejectionReason { get; set; }
 
+        [MaxLength(2000)]
+        public string? ProofOfWorkImageUrls { get; set; }
+
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
         public DateTime? ApprovedAt { get; set; }
 

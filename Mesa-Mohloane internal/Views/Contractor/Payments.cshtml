@@ -1,0 +1,161 @@
+@using Mesa_Mohloane_internal.Models
+@model dynamic
+
+@{
+    ViewData["Title"] = "My Payments";
+}
+
+<div class="container-fluid">
+    <div class="page-header mb-4">
+        <div>
+            <h1 class="page-title">Payment Status</h1>
+            <div class="page-subtitle">Track your payments for completed work</div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="stat-value" id="totalPendingCount">0</div>
+                    <div class="stat-delta text-muted">Pending Approvals</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="stat-value" id="totalDisbursedCount">0</div>
+                    <div class="stat-delta text-success">Disbursed</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="stat-value" id="totalAmountM">M0.00</div>
+                    <div class="stat-delta text-muted">Total Payments</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Payment History</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="paymentsTable">
+                <thead>
+                    <tr>
+                        <th>Incident</th>
+                        <th>Amount</th>
+                        <th>Invoice Date</th>
+                        <th>Citizen Acknowledged</th>
+                        <th>Admin Approved</th>
+                        <th>Status</th>
+                        <th>Disbursed Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="paymentsList">
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+<script>
+async function loadPayments() {
+    try {
+        const response = await axios.get('/api/Payments/my-payments', {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        
+        const payments = response.data.data;
+        renderPayments(payments);
+        updateStatistics(payments);
+    } catch (error) {
+        console.error('Error loading payments:', error);
+        document.getElementById('paymentsList').innerHTML = 
+            '<tr><td colspan="8" class="text-center text-danger py-4">Failed to load payments</td></tr>';
+    }
+}
+
+function renderPayments(payments) {
+    const tbody = document.getElementById('paymentsList');
+    
+    if (!payments || payments.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No payments found</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = payments.map(p => `
+        <tr>
+            <td><strong>${p.incidentTitle || 'N/A'}</strong></td>
+            <td>M${p.amount.toFixed(2)}</td>
+            <td>${new Date(p.createdAt).toLocaleDateString()}</td>
+            <td>
+                ${p.citizenAcknowledged 
+                    ? '<span class="badge bg-success">✓ Yes</span>' 
+                    : '<span class="badge bg-warning">Pending</span>'}
+            </td>
+            <td>
+                ${p.adminApproved 
+                    ? '<span class="badge bg-success">✓ Yes</span>' 
+                    : '<span class="badge bg-warning">Pending</span>'}
+            </td>
+            <td>
+                <span class="badge ${getStatusBadge(p.status)}">
+                    ${p.status}
+                </span>
+            </td>
+            <td>
+                ${p.disbursedAt 
+                    ? new Date(p.disbursedAt).toLocaleDateString()
+                    : '-'}
+            </td>
+            <td>
+                <button class="btn btn-sm btn-info" onclick="viewPaymentDetails(${p.invoiceId})">
+                    View Invoice
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function updateStatistics(payments) {
+    const pending = payments.filter(p => p.status === 'Pending').length;
+    const disbursed = payments.filter(p => p.status === 'Disbursed').length;
+    const total = payments.reduce((sum, p) => sum + p.amount, 0);
+
+    document.getElementById('totalPendingCount').textContent = pending;
+    document.getElementById('totalDisbursedCount').textContent = disbursed;
+    document.getElementById('totalAmountM').textContent = `M${total.toFixed(2)}`;
+}
+
+function getStatusBadge(status) {
+    switch(status) {
+        case 'Pending': return 'bg-warning';
+        case 'Approved': return 'bg-info';
+        case 'Disbursed': return 'bg-success';
+        case 'Cancelled': return 'bg-danger';
+        default: return 'bg-secondary';
+    }
+}
+
+function viewPaymentDetails(invoiceId) {
+    // Navigate to invoice details
+    window.location.href = `/Contractor/Invoice/${invoiceId}`;
+}
+
+function getToken() {
+    return localStorage.getItem('authToken') || sessionStorage.getItem('authToken') || '';
+}
+
+document.addEventListener('DOMContentLoaded', loadPayments);
+</script>

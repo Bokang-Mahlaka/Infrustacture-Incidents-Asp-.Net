@@ -1,0 +1,236 @@
+@using Mesa_Mohloane_internal.Models
+@model List<dynamic>
+
+@{
+    ViewData["Title"] = "Contractors";
+}
+
+<div class="container-fluid">
+    <div class="page-header mb-4">
+        <div>
+            <h1 class="page-title">Contractor Management</h1>
+            <div class="page-subtitle">View contractor profiles, proposals, and invoice history</div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by name or company...">
+                <button class="btn btn-outline-secondary" onclick="filterContractors()">
+                    <i data-lucide="search"></i> Search
+                </button>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <select id="sortBy" class="form-select" onchange="filterContractors()">
+                <option value="name">Sort by Name</option>
+                <option value="rating">Sort by Rating</option>
+                <option value="jobs">Sort by Completed Jobs</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="contractorsTable">
+                <thead>
+                    <tr>
+                        <th>Contractor Name</th>
+                        <th>Company</th>
+                        <th>Rating</th>
+                        <th>Completed Jobs</th>
+                        <th>Proposals</th>
+                        <th>Avg Cost</th>
+                        <th>Email</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="contractorsList">
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Contractor Detail Modal -->
+<div class="modal fade" id="contractorModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Contractor Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contractorModalBody">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+<script>
+let contractorsData = [];
+
+async function loadContractors() {
+    try {
+        const response = await axios.get('/api/Contractors', {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        contractorsData = response.data.data;
+        renderContractors(contractorsData);
+    } catch (error) {
+        console.error('Error loading contractors:', error);
+        alert('Failed to load contractors');
+    }
+}
+
+function renderContractors(contractors) {
+    const tbody = document.getElementById('contractorsList');
+    tbody.innerHTML = '';
+
+    contractors.forEach(c => {
+        const row = `
+            <tr>
+                <td><strong>${c.fullName}</strong></td>
+                <td>${c.companyName || 'N/A'}</td>
+                <td>
+                    <span class="badge bg-warning">${c.averageRating.toFixed(1)} ⭐</span>
+                </td>
+                <td>${c.completedJobs}</td>
+                <td>${c.proposalsSubmitted}</td>
+                <td>M${c.averageProposalCost.toFixed(2)}</td>
+                <td>${c.email || 'N/A'}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="viewContractorDetail('${c.id}')">
+                        View Details
+                    </button>
+                </td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+}
+
+async function viewContractorDetail(contractorId) {
+    try {
+        const response = await axios.get(`/api/Contractors/${contractorId}`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const contractor = response.data.data;
+
+        const html = `
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p><strong>Full Name:</strong> ${contractor.fullName}</p>
+                    <p><strong>Company:</strong> ${contractor.companyName || 'N/A'}</p>
+                    <p><strong>Email:</strong> ${contractor.email || 'N/A'}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Rating:</strong> <span class="badge bg-warning">${contractor.averageRating.toFixed(1)} ⭐</span></p>
+                    <p><strong>Completed Jobs:</strong> ${contractor.completedJobs}</p>
+                    <p><strong>Late Completions:</strong> ${contractor.lateCompletions}</p>
+                </div>
+            </div>
+
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#proposals" data-bs-toggle="tab">Proposals (${contractor.proposals.length})</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#invoices" data-bs-toggle="tab">Invoices (${contractor.invoices.length})</a>
+                </li>
+            </ul>
+
+            <div class="tab-content mt-3">
+                <div class="tab-pane fade show active" id="proposals">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Incident</th>
+                                    <th>Cost</th>
+                                    <th>Days</th>
+                                    <th>Status</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${contractor.proposals.map(p => `
+                                    <tr>
+                                        <td>${p.incidentTitle}</td>
+                                        <td>M${p.totalCost.toFixed(2)}</td>
+                                        <td>${p.estimatedDays}d</td>
+                                        <td><span class="badge bg-info">${p.status}</span></td>
+                                        <td>${p.score.toFixed(2)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="invoices">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Incident</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Flagged</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${contractor.invoices.map(inv => `
+                                    <tr>
+                                        <td>${inv.incidentTitle}</td>
+                                        <td>M${inv.totalAmount.toFixed(2)}</td>
+                                        <td><span class="badge bg-info">${inv.status}</span></td>
+                                        <td>${inv.deviationFlagged ? '<span class="badge bg-danger">YES</span>' : '<span class="badge bg-success">NO</span>'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('contractorModalBody').innerHTML = html;
+        new bootstrap.Modal(document.getElementById('contractorModal')).show();
+    } catch (error) {
+        console.error('Error loading contractor details:', error);
+        alert('Failed to load contractor details');
+    }
+}
+
+function filterContractors() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const sort = document.getElementById('sortBy').value;
+
+    let filtered = contractorsData.filter(c =>
+        c.fullName.toLowerCase().includes(search) ||
+        (c.companyName && c.companyName.toLowerCase().includes(search))
+    );
+
+    if (sort === 'rating') {
+        filtered.sort((a, b) => b.averageRating - a.averageRating);
+    } else if (sort === 'jobs') {
+        filtered.sort((a, b) => b.completedJobs - a.completedJobs);
+    } else {
+        filtered.sort((a, b) => a.fullName.localeCompare(b.fullName));
+    }
+
+    renderContractors(filtered);
+}
+
+function getToken() {
+    // Retrieve JWT token from localStorage or session
+    return localStorage.getItem('authToken') || sessionStorage.getItem('authToken') || '';
+}
+
+// Load contractors on page load
+document.addEventListener('DOMContentLoaded', loadContractors);
+</script>

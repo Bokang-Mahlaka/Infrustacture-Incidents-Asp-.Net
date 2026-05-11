@@ -2,6 +2,7 @@ using MesaMohloane.API.Data;
 using MesaMohloane.API.Models;
 using MesaMohloane.API.Models.DTOs;
 using MesaMohloane.API.Services.Auditing;
+using MesaMohloane.API.Services.Email;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,23 +20,154 @@ namespace MesaMohloane.API.Controllers
         private readonly IAuditService _auditService;
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger<IncidentsController> _logger;
+        private readonly IEmailService _emailService;
 
         public IncidentsController(
             ApplicationDbContext context,
             IAuditService auditService,
             IWebHostEnvironment environment,
-            ILogger<IncidentsController> logger)
+            ILogger<IncidentsController> logger,
+            IEmailService emailService)
         {
             _context = context;
             _auditService = auditService;
             _environment = environment;
             _logger = logger;
+            _emailService = emailService;
         }
 
         /// <summary>
         /// Get all incidents with optional filtering by status and category.
         /// </summary>
-        [HttpGet]
+        [HttpGet("summary")]
+        public async Task<ActionResult<ApiResponse<CitizenDashboardStatsDto>>> GetSummary()
+        {
+            var totalReports = await _context.Incidents.CountAsync();
+            var resolvedReports = await _context.Incidents.CountAsync(i =>
+                i.Status == IncidentStatus.Completed || i.Status == IncidentStatus.Closed);
+
+            var assignmentDurations = await _context.AuditLogs
+                .AsNoTracking()
+                .Where(a => a.Entity == "Incident" && a.Action == "ContractorAssigned")
+                .Join(_context.Incidents.AsNoTracking(),
+                    audit => audit.EntityId,
+                    incident => incident.Id,
+                    (audit, incident) => new { incident.CreatedAt, audit.Timestamp })
+                .Select(x => (double?)EF.Functions.DateDiffSecond(x.CreatedAt, x.Timestamp))
+                .ToListAsync();
+
+            var averageAssignmentDays = assignmentDurations.Any()
+                ? assignmentDurations.Average() / 86400d
+                : (double?)null;
+
+            var resolutionRate = totalReports == 0
+                ? 0
+                : Math.Round((double)resolvedReports * 100 / totalReports, 1);
+
+            var stats = new CitizenDashboardStatsDto
+            {
+                TotalReports = totalReports,
+                ResolvedReports = resolvedReports,
+                ResolutionRate = resolutionRate,
+                AverageAssignmentDays = averageAssignmentDays
+            };
+
+            return Ok(ApiResponse<CitizenDashboardStatsDto>.SuccessResponse(stats, "Dashboard summary loaded."));
+        }
+
+        /// <summary>
+        /// Get admin dashboard statistics: active incidents, bid count, approvals pending.
+        /// </summary>
+        [HttpGet("admin-summary")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResponse<AdminDashboardStatsDto>>> GetAdminSummary()
+        {
+            var activeIncidents = await _context.Incidents.CountAsync(i =>
+                i.Status == IncidentStatus.Reported ||
+                i.Status == IncidentStatus.Verified ||
+                i.Status == IncidentStatus.Published ||
+                i.Status == IncidentStatus.Assigned ||
+                i.Status == IncidentStatus.InProgress);
+
+            var activeBids = await _context.Proposals.CountAsync(p =>
+                p.Status == ProposalStatus.Submitted ||
+                p.Status == ProposalStatus.UnderReview);
+
+            var pendingApprovals = await _context.Invoices.CountAsync(inv =>
+                inv.Status == InvoiceStatus.Submitted ||
+                inv.Status == InvoiceStatus.Flagged);
+
+            var proposalCosts = await _context.Proposals
+                .AsNoTracking()
+                .Select(p => (double)p.TotalCost)
+                .ToListAsync();
+
+            var averageCost = proposalCosts.Any()
+                ? proposalCosts.Average()
+                : 0;
+
+            var contractorRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Contractor");
+            var pendingContractors = 0;
+            if (contractorRole != null)
+            {
+                pendingContractors = await _context.Users
+                    .Join(_context.UserRoles, u => u.Id, ur => ur.UserId, (u, ur) => new { u, ur })
+                    .CountAsync(x => x.ur.RoleId == contractorRole.Id && x.u.RegistrationStatus == RegistrationStatus.Pending);
+            }
+
+            var stats = new AdminDashboardStatsDto
+            {
+                ActiveInfrastructureSignals = activeIncidents,
+                ActiveBids = activeBids,
+                PendingApprovals = pendingApprovals + pendingContractors,
+                AverageProposalCost = averageCost
+            };
+
+            return Ok(ApiResponse<AdminDashboardStatsDto>.SuccessResponse(stats, "Admin dashboard summary loaded."));
+        }
+
+        /// <summary>
+        /// Contractor marks work as complete, triggering citizen notification.
+        /// </summary>
+        [HttpPatch("{id}/mark-complete")]
+        [Authorize(Roles = "Contractor")]
+        public async Task<ActionResult<ApiResponse<string>>> MarkComplete(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var incident = await _context.Incidents
+                .Include(i => i.Citizen)
+                .Include(i => i.AssignedContractor)
+                .FirstOrDefaultAsync(i => i.Id == id);
+
+            if (incident == null)
+                return NotFound(ApiResponse<string>.ErrorResponse("Incident not found."));
+
+            if (incident.AssignedContractorId != userId)
+                return Forbid();
+
+            if (incident.Status != IncidentStatus.InProgress)
+                return BadRequest(ApiResponse<string>.ErrorResponse("Only incidents in InProgress status can be marked complete."));
+
+            incident.Status = IncidentStatus.Completed;
+            await _context.SaveChangesAsync();
+
+            // Audit log
+            await _auditService.LogAsync(userId, "WorkMarkedComplete", "Incident", incident.Id,
+                newValue: "Contractor marked work as complete",
+                ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
+
+            // Send notification to citizen
+            if (incident.Citizen?.Email != null)
+            {
+                await _emailService.SendCompletionNotificationAsync(
+                    incident.Citizen.Email,
+                    incident.Citizen.FullName,
+                    incident.Title);
+            }
+
+            return Ok(ApiResponse<string>.SuccessResponse("Work marked as complete. Citizen has been notified."));
+        }
         public async Task<ActionResult<ApiResponse<List<IncidentDto>>>> GetAll(
             [FromQuery] IncidentStatus? status = null,
             [FromQuery] IncidentCategory? category = null)
@@ -160,7 +292,7 @@ namespace MesaMohloane.API.Controllers
 
             // Audit log
             await _auditService.LogAsync(userId, "IncidentCreated", "Incident", incident.Id,
-                newValue: $"Title: {incident.Title}, Category: {incident.Category}, Location: {incident.Location}",
+                newValue: $"Title: {incident.Title}, Category: {incident.Category}, Location: {incident.Location}, GPS: ({incident.Latitude:F6}, {incident.Longitude:F6})",
                 ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
 
             // Reload with navigation properties

@@ -38,8 +38,21 @@
                     <span class="text-muted small fw-bold">REF: MS-@Model.Id-2026</span>
                 </div>
 
-                <h1 class="fw-extrabold text-heading mb-3">@Model.Title</h1>
+                <h1 class="fw-extrabold text-heading mb-4">@Model.Title</h1>
 
+                <!-- MAP FIRST - Primary Focus -->
+                @if (Model.Latitude != 0 && Model.Longitude != 0)
+                {
+                    <div class="mb-5">
+                        <h5 class="fw-bold mb-3 d-flex align-items-center">
+                            <i data-lucide="map" class="text-brand me-2" style="width: 20px; height: 20px;"></i>
+                            Incident Location Map
+                        </h5>
+                        <div id="incidentMap" style="height: 500px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid var(--border-light);"></div>
+                    </div>
+                }
+
+                <!-- Location Details Below Map -->
                 <div class="d-flex align-items-center mb-4 pb-4 border-bottom">
                     <div class="bg-light p-3 rounded-circle me-3">
                         <i data-lucide="map-pin" class="text-brand" style="width: 24px; height: 24px;"></i>
@@ -49,7 +62,7 @@
                         <p class="text-muted mb-0">@Model.Location</p>
                         @if (Model.Latitude != 0 && Model.Longitude != 0)
                         {
-                            <p class="text-muted small mb-0">GPS: @Model.Latitude, @Model.Longitude</p>
+                            <p class="text-muted small mb-0">GPS: @Model.Latitude.ToString("F6"), @Model.Longitude.ToString("F6")</p>
                         }
                     </div>
                 </div>
@@ -129,3 +142,106 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Initialize map if GPS coordinates are available
+        @if (Model.Latitude != 0 && Model.Longitude != 0)
+        {
+            <text>
+        function initializeMap() {
+            console.log('Initializing map...');
+            console.log('Leaflet available:', typeof L !== 'undefined');
+
+            // Check if Leaflet is loaded
+            if (typeof L === 'undefined') {
+                console.error('Leaflet.js not loaded yet, retrying...');
+                setTimeout(initializeMap, 200);
+                return;
+            }
+
+            const mapContainer = document.getElementById('incidentMap');
+            if (!mapContainer) {
+                console.error('Map container not found');
+                return;
+            }
+
+            // Ensure container has proper dimensions
+            console.log('Map container found, size:', mapContainer.offsetWidth, 'x', mapContainer.offsetHeight);
+
+            try {
+                // Initialize the map with proper options
+                const map = L.map('incidentMap', {
+                    center: [@Model.Latitude, @Model.Longitude],
+                    zoom: 15,
+                    scrollWheelZoom: true
+                });
+
+                console.log('Map object created');
+
+                // Add OpenStreetMap tiles with crossOrigin
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 19,
+                    crossOrigin: true
+                }).addTo(map);
+
+                console.log('Tiles loaded');
+
+                // Add a marker at the incident location
+                const marker = L.marker([@Model.Latitude, @Model.Longitude], {
+                    title: '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(Model.Title))'
+                }).addTo(map);
+                
+                // Set marker popup with incident details
+                marker.bindPopup(`
+                    <div style="font-size: 13px; width: 200px;">
+                        <strong style="color: var(--brand-primary);">@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(Model.Title))</strong><br/>
+                        <small style="color: #666;">📍 @Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(Model.Location))</small><br/>
+                        <small style="color: #999;">@Model.Latitude.ToString("F6")°, @Model.Longitude.ToString("F6")°</small>
+                    </div>
+                `);
+
+                // Open popup automatically
+                marker.openPopup();
+
+                console.log('Map initialized successfully! Coordinates: @Model.Latitude, @Model.Longitude');
+
+            } catch(error) {
+                console.error('Error initializing map:', error);
+            }
+        }
+
+        // Wait for DOM and Leaflet to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM loaded, initializing map in 300ms');
+                setTimeout(initializeMap, 300);
+            });
+        } else {
+            console.log('DOM already loaded, initializing map in 300ms');
+            setTimeout(initializeMap, 300);
+        }
+            </text>
+        }
+    </script>
+    <style>
+        #incidentMap {
+            width: 100% !important;
+            height: 500px !important;
+            position: relative !important;
+        }
+        
+        .leaflet-container {
+            background: #f0f0f0;
+            font-family: inherit;
+        }
+        
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+    </style>
+}
+}

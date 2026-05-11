@@ -20,6 +20,11 @@ namespace Mesa_Mohloane_internal.Models
         public int? PaymentId { get; set; }
         public bool CitizenAcknowledged { get; set; }
         public string? ActualPaymentStatus { get; set; } // Pending, Disbursed, etc.
+        public string? ProofOfWorkImageUrls { get; set; }
+        public List<string> ProofOfWorkImagesList => 
+            string.IsNullOrEmpty(ProofOfWorkImageUrls) 
+                ? new List<string>() 
+                : ProofOfWorkImageUrls.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
 
         public List<LineItemViewModel> LineItems { get; set; } = new();
     }
@@ -33,6 +38,9 @@ namespace Mesa_Mohloane_internal.Models
         public decimal TotalAmount { get; set; }
 
         public string Description { get; set; } = "Final repair and materials";
+
+        public string? ProofOfWorkImageUrls { get; set; }
+        public List<IFormFile>? Photos { get; set; }
     }
 
     public class LineItemViewModel

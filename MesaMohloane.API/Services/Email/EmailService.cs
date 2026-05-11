@@ -8,6 +8,7 @@ namespace MesaMohloane.API.Services.Email
         Task SendEmailAsync(string toEmail, string toName, string subject, string htmlBody);
         Task SendAssignmentNotificationAsync(string contractorEmail, string contractorName, string incidentTitle);
         Task SendCompletionNotificationAsync(string citizenEmail, string citizenName, string incidentTitle);
+        Task SendInvoiceSubmittedNotificationAsync(string citizenEmail, string citizenName, string incidentTitle, string contractorName);
         Task SendPaymentNotificationAsync(string contractorEmail, string contractorName, string incidentTitle, decimal amount);
     }
 
@@ -45,7 +46,7 @@ namespace MesaMohloane.API.Services.Email
                 await client.ConnectAsync(
                     emailSettings["SmtpServer"] ?? "localhost",
                     port,
-                    useSsl ? MailKit.Security.SecureSocketOptions.SslOnConnect : MailKit.Security.SecureSocketOptions.None);
+                    MailKit.Security.SecureSocketOptions.Auto);
 
                 var username = emailSettings["Username"];
                 if (!string.IsNullOrEmpty(username))
@@ -96,6 +97,25 @@ namespace MesaMohloane.API.Services.Email
                         <strong>{incidentTitle}</strong>
                     </div>
                     <p>Please log into the system to review and acknowledge the completed work. You will also be able to rate the contractor's performance.</p>
+                    <hr style='border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;' />
+                    <p style='color: #6b7280; font-size: 12px;'>Mesa-Mohloane Infrastructure Management System — Kingdom of Lesotho</p>
+                </div>";
+
+            await SendEmailAsync(citizenEmail, citizenName, subject, body);
+        }
+
+        public async Task SendInvoiceSubmittedNotificationAsync(string citizenEmail, string citizenName, string incidentTitle, string contractorName)
+        {
+            var subject = $"Mesa-Mohloane: Invoice submitted for \"{incidentTitle}\"";
+            var body = $@"
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+                    <h2 style='color: #dc2626;'>📋 Invoice Submission Alert</h2>
+                    <p>Dear <strong>{citizenName}</strong>,</p>
+                    <p>Contractor <strong>{contractorName}</strong> has submitted their final invoice for the following completed work:</p>
+                    <div style='background: #fef2f2; border-left: 4px solid #dc2626; padding: 16px; margin: 16px 0;'>
+                        <strong>{incidentTitle}</strong>
+                    </div>
+                    <p>Please log into the system to review the invoice and acknowledge the completed work. Once you acknowledge, the payment will be ready for disbursement by the administrator.</p>
                     <hr style='border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;' />
                     <p style='color: #6b7280; font-size: 12px;'>Mesa-Mohloane Infrastructure Management System — Kingdom of Lesotho</p>
                 </div>";

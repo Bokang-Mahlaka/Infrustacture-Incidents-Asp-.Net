@@ -17,18 +17,30 @@ namespace Mesa_Mohloane_internal.Controllers
 
         public async Task<IActionResult> Dashboard()
         {
-            // Fetch all incidents
-            var response = await _apiClient.GetAsync<ApiResponse<List<IncidentViewModel>>>("/api/Incidents");
-            
+            var incidentsTask = _apiClient.GetAsync<ApiResponse<List<IncidentViewModel>>>("/api/Incidents");
+            var statsTask = _apiClient.GetAsync<ApiResponse<CitizenDashboardStatsViewModel>>("/api/Incidents/summary");
+
+            await Task.WhenAll(incidentsTask, statsTask);
+
             var incidents = new List<IncidentViewModel>();
-            if (response != null && response.Success && response.Data != null)
+            var incidentsResponse = await incidentsTask;
+            if (incidentsResponse != null && incidentsResponse.Success && incidentsResponse.Data != null)
             {
-                // In a perfect world, we'd have a 'api/Incidents/my'
-                // Here, we grab them all, assuming the citizen can view the feed of infrastructure issues
-                incidents = response.Data.ToList();
+                incidents = incidentsResponse.Data.ToList();
             }
 
-            return View(incidents);
+            var stats = new CitizenDashboardStatsViewModel();
+            var statsResponse = await statsTask;
+            if (statsResponse != null && statsResponse.Success && statsResponse.Data != null)
+            {
+                stats = statsResponse.Data;
+            }
+
+            return View(new CitizenDashboardViewModel
+            {
+                Incidents = incidents,
+                Stats = stats
+            });
         }
 
         [HttpGet]
@@ -122,6 +134,22 @@ namespace Mesa_Mohloane_internal.Controllers
                     IncidentId = incidentId,
                     IncidentTitle = response.Data.Title
                 };
+
+                // Fetch images from the associated invoice
+                var propResp = await _apiClient.GetAsync<ApiResponse<List<ProposalViewModel>>>($"/api/Proposals/incident/{incidentId}");
+                if (propResp != null && propResp.Success && propResp.Data != null)
+                {
+                    var acceptedProp = propResp.Data.FirstOrDefault(p => p.Status == "Accepted");
+                    if (acceptedProp != null)
+                    {
+                        var invResp = await _apiClient.GetAsync<ApiResponse<InvoiceViewModel>>($"/api/Invoices/proposal/{acceptedProp.Id}");
+                        if (invResp != null && invResp.Success && invResp.Data != null)
+                        {
+                            model.ProofOfWorkImageUrls = invResp.Data.ProofOfWorkImageUrls;
+                        }
+                    }
+                }
+
                 return View("SignOff", model);
             }
 

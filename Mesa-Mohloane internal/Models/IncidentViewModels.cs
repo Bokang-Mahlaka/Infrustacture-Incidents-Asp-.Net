@@ -19,6 +19,35 @@ namespace Mesa_Mohloane_internal.Models
         public bool IsAcknowledged { get; set; }
     }
 
+    public class CitizenDashboardStatsViewModel
+    {
+        public int TotalReports { get; set; }
+        public int ResolvedReports { get; set; }
+        public double ResolutionRate { get; set; }
+        public double? AverageAssignmentDays { get; set; }
+    }
+
+    public class CitizenDashboardViewModel
+    {
+        public List<IncidentViewModel> Incidents { get; set; } = new();
+        public CitizenDashboardStatsViewModel Stats { get; set; } = new();
+    }
+
+    public class AdminDashboardStatsViewModel
+    {
+        public int ActiveInfrastructureSignals { get; set; }
+        public int ActiveBids { get; set; }
+        public int PendingApprovals { get; set; }
+        public double AverageProposalCost { get; set; }
+    }
+
+    public class AdminDashboardViewModel
+    {
+        public List<IncidentViewModel> Incidents { get; set; } = new();
+        public AdminDashboardStatsViewModel Stats { get; set; } = new();
+        public List<ContractorSummaryViewModel> PendingContractors { get; set; } = new();
+    }
+
     public class CreateIncidentViewModel
     {
         [Required]

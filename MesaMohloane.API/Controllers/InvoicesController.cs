@@ -1,7 +1,9 @@
+using MesaMohloane.API.Attributes;
 using MesaMohloane.API.Data;
 using MesaMohloane.API.Models;
 using MesaMohloane.API.Models.DTOs;
 using MesaMohloane.API.Services.Auditing;
+using MesaMohloane.API.Services.Email;
 using MesaMohloane.API.Services.InvoiceValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,15 +20,18 @@ namespace MesaMohloane.API.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IAuditService _auditService;
         private readonly IInvoiceValidationService _validationService;
+        private readonly IEmailService _emailService;
 
         public InvoicesController(
             ApplicationDbContext context,
             IAuditService auditService,
-            IInvoiceValidationService validationService)
+            IInvoiceValidationService validationService,
+            IEmailService emailService)
         {
             _context = context;
             _auditService = auditService;
             _validationService = validationService;
+            _emailService = emailService;
         }
 
         /// <summary>
@@ -87,11 +92,30 @@ namespace MesaMohloane.API.Controllers
         }
 
         /// <summary>
+        /// Get invoice by proposal ID.
+        /// </summary>
+        [HttpGet("proposal/{proposalId}")]
+        public async Task<ActionResult<ApiResponse<InvoiceDto>>> GetByProposalId(int proposalId)
+        {
+            var invoice = await _context.Invoices
+                .Include(i => i.Contractor)
+                .Include(i => i.LineItems)
+                .Include(i => i.Proposal)
+                .FirstOrDefaultAsync(i => i.ProposalId == proposalId);
+
+            if (invoice == null)
+                return NotFound(ApiResponse<InvoiceDto>.ErrorResponse("Invoice not found."));
+
+            return Ok(ApiResponse<InvoiceDto>.SuccessResponse(MapToDto(invoice)));
+        }
+
+        /// <summary>
         /// Contractor submits a final invoice for an accepted proposal.
         /// Runs all validation checks: Integrity, Reference, and Deviation.
         /// </summary>
         [HttpPost("proposal/{proposalId}")]
         [Authorize(Roles = "Contractor")]
+        [AuthorizeResourceOwner("proposalId")]
         public async Task<ActionResult<ApiResponse<InvoiceDto>>> Submit(int proposalId, [FromBody] CreateInvoiceDto dto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -99,6 +123,8 @@ namespace MesaMohloane.API.Controllers
             // Get proposal with details
             var proposal = await _context.Proposals
                 .Include(p => p.LineItems)
+                .Include(p => p.Incident)
+                    .ThenInclude(i => i.Citizen)
                 .FirstOrDefaultAsync(p => p.Id == proposalId);
 
             if (proposal == null)
@@ -118,6 +144,7 @@ namespace MesaMohloane.API.Controllers
                 ProposalId = proposalId,
                 ContractorId = userId!,
                 TotalAmount = dto.TotalAmount,
+                ProofOfWorkImageUrls = dto.ProofOfWorkImageUrls,
                 SubmittedAt = DateTime.UtcNow
             };
 
@@ -190,6 +217,17 @@ namespace MesaMohloane.API.Controllers
             await _auditService.LogAsync(userId, "InvoiceSubmitted", "Invoice", invoice.Id,
                 newValue: auditMessage,
                 ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString());
+
+            // Send notification to citizen that invoice has been submitted
+            var contractor = await _context.Users.FindAsync(userId);
+            if (proposal?.Incident?.Citizen?.Email != null && contractor != null)
+            {
+                await _emailService.SendInvoiceSubmittedNotificationAsync(
+                    proposal.Incident.Citizen.Email,
+                    proposal.Incident.Citizen.FullName,
+                    proposal.Incident.Title,
+                    contractor.FullName);
+            }
 
             // Reload
             await _context.Entry(invoice).Reference(i => i.Contractor).LoadAsync();
@@ -294,6 +332,7 @@ namespace MesaMohloane.API.Controllers
                 SubmittedAt = invoice.SubmittedAt,
                 ApprovedAt = invoice.ApprovedAt,
                 OriginalProposalCost = invoice.Proposal?.TotalCost ?? 0,
+                ProofOfWorkImageUrls = invoice.ProofOfWorkImageUrls,
                 LineItems = invoice.LineItems?.Select(li => new LineItemDto
                 {
                     Id = li.Id,
